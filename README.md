@@ -16,8 +16,9 @@ implementation leverages jump tables and indexed objects to ensure the fastest
 execution of flow segments. Like WordPress' actions & filters, actionflows
 allow flow segments to have a priority property with values of 1 to 100 (with a
 default of 50; a higher resolution than WordPress'). The priority property determines
-earlier or later execution order of a flow segment. These features can make
-flows extendable and allows flows to furnish an expandable, "plugin-able" API.
+earlier or later execution order of a flow segment (i.e. priority 1 executes before
+any priority 2s, etc). These features can make flows extendable and allows flows 
+to furnish an expandable, "plugin-able" API.
 
 ## Examples
 
@@ -31,6 +32,7 @@ Description to follow...
 * Give the `action` node a unique and short name that describes the action.
 * Use the `action in` and `action out` nodes to create a flow segment.
 * Name `action in` and `action out` nodes with a prefix that matches an existing action.
+* Assign a priority to the `action in` node (1 to 100).
 
 #### Another Example
 Description with flow below...
