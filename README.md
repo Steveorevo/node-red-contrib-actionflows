@@ -5,7 +5,7 @@ subflows work or the link nodes' "virtual wires"; invoking flow segments located
 elsewhere. Unlike link nodes or subflows, flows that use the actionflows node do
 NOT need to be aware of existing segments or have them pre-defined. Instead,
 segments are invoked by a named prefix schema; allowing an arbitrary number of
-flow segments to added or imported later (such as when using flowman or flow
+flow segments to be added or imported later (such as when using flowman or flow
 dispatcher) without modifying the original flow. ActionFlows' segments are
 invoked sequentially with their order determined by the segment's author (see
 priority description below).
