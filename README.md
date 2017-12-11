@@ -13,9 +13,9 @@ priority description below).
 Inspired by WordPress' core actions and filters API (but faster) that inarguably
 enabled one of the world's largest and most prolific plugin communities. This
 implementation leverages jump tables and indexed objects to ensure the fastest
-execution of flow segments. Like to WordPress' actions & filters, actionflows
+execution of flow segments. Like WordPress' actions & filters, actionflows
 allow flow segments to have a priority property with values of 1 to 100 (with a
-default of 50; wider than WordPress' API). The priority property determines
+default of 50; a higher resolution than WordPress'). The priority property determines
 earlier or later execution order of a flow segment. These features can make
 flows extendable and allows flows to furnish an expandable, "plugin-able" API.
 
