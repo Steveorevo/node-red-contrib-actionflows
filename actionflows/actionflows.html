@@ -1,0 +1,162 @@
+<script type="text/javascript">
+	RED.nodes.registerType('actionflows', {
+		category: 'advanced',
+		color: '#E0C67E',
+		defaults: {
+      name: {value:"action"},
+      info: {value:""}
+		},
+		inputs:1,
+		outputs:1,
+		icon: "actionflows.png",
+    paletteLabel: "action",
+		label: function() {
+			return this.name||"action";
+		},
+    labelStyle: function() {
+      return this.name?"node_label_italic":"";
+    },
+    info: function() {
+        return (this.name?"# "+this.name+"\n":"")+(this.info||"");
+    },
+    oneditprepare: function() {
+      var node = this;
+      node.editor = RED.editor.createEditor({
+          id: 'node-description-editor',
+          mode: 'ace/mode/markdown',
+          value: $("#node-input-info").val()
+      });
+      console.log(RED.nodes.filterNodes({type:'actionflows_in'}));
+      node.editor.focus();
+      // node.resizeRule = function(width) {
+      //
+      // }
+      console.log(RED.settings.actionflowsColor);
+    },
+    // oneditresize:function(size) {
+    //   this.resizeRule(size.width);
+    // },
+    oneditsave: function() {
+      $("#node-input-info").val(this.editor.getValue());
+      this.editor.destroy();
+      delete this.editor;
+      console.log(RED.settings.actionflowsColor);
+    },
+    oneditcancel: function() {
+      this.editor.destroy();
+      delete this.editor;
+    }
+	});
+</script>
+<script type="text/javascript">
+	RED.nodes.registerType('actionflows_in', {
+		category: 'advanced',
+		color: '#E0C67E',
+		defaults: {
+      name: {value:"action_in"},
+      priority: {value:"50", required:true, validate:RED.validators.number()},
+      links: {value: []}
+		},
+		inputs:0,
+		outputs:1,
+		icon: "actionflows.png",
+    paletteLabel: "action_in",
+		label: function() {
+			return this.name||"action_in";
+		},
+    labelStyle: function() {
+      return this.name?"node_label_italic":"";
+    },
+    oneditprepare: function() {
+      var node = this;
+      $("#node-input-priority").spinner({min:1,max:100});
+      // node.resizeRule = function(width) {
+      //
+      // }
+    },
+    // oneditresize:function(size) {
+    //   this.resizeRule(size.width);
+    // },
+    oneditsave: function() {
+
+    }
+	});
+</script>
+<script type="text/javascript">
+	RED.nodes.registerType('actionflows_out', {
+		category: 'advanced',
+		color: '#E0C67E',
+    align: 'right',
+		defaults: {
+      name: {value:"action_out"},
+      links: { value: [] }
+		},
+		inputs:1,
+		outputs:0,
+		icon: "actionflows.png",
+    paletteLabel: "action_out",
+		label: function() {
+			return this.name||"action_out";
+		},
+    labelStyle: function() {
+      return this.name?"node_label_italic":"";
+    },
+    oneditprepare: function() {
+      var node = this;
+      // node.resizeRule = function(width) {
+      //
+      // }
+    },
+    // oneditresize:function(size) {
+    //   this.resizeRule(size.width);
+    // },
+    oneditsave: function() {
+
+    }
+	});
+</script>
+<script type="text/x-red" data-template-name="actionflows">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row" style="margin-bottom: 0px;">
+      <label for="node-input-info">Description</label>
+      <a href="https://guides.github.com/features/mastering-markdown/" target="_blank" style="font-size: 0.8em; float: right;">markdown</a>
+      <input type="hidden" id="node-input-info" autofocus="autofocus">
+    </div>
+    <div class="form-row node-text-editor-row">
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-description-editor"></div>
+    </div>
+</script>
+<script type="text/x-red" data-template-name="actionflows_in">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row" id="priority-details-for">
+        <label for="node-input-priority"><i class="fa fa-flag"></i> Priority</label>
+        <input type="text" id="node-input-priority" style="text-align:end; width:50px !important">
+    </div>
+</script>
+<script type="text/x-red" data-template-name="actionflows_out">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+<script type="text/x-red" data-help-name="actionflows"></script>
+<script type="text/x-red" data-help-name="actionflows_in">
+  <p>Description...</p>
+  <h3>References</h3>
+  <ul>
+       <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>
+   </ul>
+</script>
+<script type="text/x-red" data-help-name="actionflows_out">
+  <p>Description...</p>
+  <h3>References</h3>
+  <ul>
+       <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>
+   </ul>
+</script>

@@ -17,7 +17,7 @@ execution of flow segments. Like WordPress' actions & filters, actionflows
 allow flow segments to have a priority property with values of 1 to 100 (with a
 default of 50; a higher resolution than WordPress'). The priority property determines
 earlier or later execution order of a flow segment (i.e. priority 1 executes before
-any priority 2s, etc). These features can make flows extendable and allows flows 
+any priority 2s, etc). These features can make flows extendable and allows flows
 to furnish an expandable, "plugin-able" API.
 
 ## Examples

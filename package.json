@@ -1,0 +1,28 @@
+{
+  "name": "node-red-contrib-actionflows",
+  "version": "0.0.1",
+  "description": "Provides a set of nodes to enable an extendable design pattern for flows.",
+  "author": "Stephen J. Carnam <steveorevo@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "node-red",
+    "extendable",
+    "actions",
+    "filters",
+    "plugins",
+    "extend",
+    "flows",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Steveorevo/node-red-contrib-actionflows.git"
+  },
+  "dependencies": {
+  },
+  "node-red": {
+    "nodes": {
+      "actionfilters": "actionflows/actionflows.js"
+    }
+  }
+}
