@@ -26,21 +26,12 @@
           mode: 'ace/mode/markdown',
           value: $("#node-input-info").val()
       });
-      console.log(RED.nodes.filterNodes({type:'actionflows_in'}));
       node.editor.focus();
-      // node.resizeRule = function(width) {
-      //
-      // }
-      console.log(RED.settings.actionflowsColor);
     },
-    // oneditresize:function(size) {
-    //   this.resizeRule(size.width);
-    // },
     oneditsave: function() {
       $("#node-input-info").val(this.editor.getValue());
       this.editor.destroy();
       delete this.editor;
-      console.log(RED.settings.actionflowsColor);
     },
     oneditcancel: function() {
       this.editor.destroy();
@@ -53,16 +44,16 @@
 		category: 'advanced',
 		color: '#E0C67E',
 		defaults: {
-      name: {value:"action_in"},
+      name: {value:"action in"},
       priority: {value:"50", required:true, validate:RED.validators.number()},
       links: {value: []}
 		},
 		inputs:0,
 		outputs:1,
 		icon: "actionflows.png",
-    paletteLabel: "action_in",
+    paletteLabel: "action in",
 		label: function() {
-			return this.name||"action_in";
+			return this.name||"action in";
 		},
     labelStyle: function() {
       return this.name?"node_label_italic":"";
@@ -70,15 +61,6 @@
     oneditprepare: function() {
       var node = this;
       $("#node-input-priority").spinner({min:1,max:100});
-      // node.resizeRule = function(width) {
-      //
-      // }
-    },
-    // oneditresize:function(size) {
-    //   this.resizeRule(size.width);
-    // },
-    oneditsave: function() {
-
     }
 	});
 </script>
@@ -88,30 +70,18 @@
 		color: '#E0C67E',
     align: 'right',
 		defaults: {
-      name: {value:"action_out"},
+      name: {value:"action out"},
       links: { value: [] }
 		},
 		inputs:1,
 		outputs:0,
 		icon: "actionflows.png",
-    paletteLabel: "action_out",
+    paletteLabel: "action out",
 		label: function() {
-			return this.name||"action_out";
+			return this.name||"action out";
 		},
     labelStyle: function() {
       return this.name?"node_label_italic":"";
-    },
-    oneditprepare: function() {
-      var node = this;
-      // node.resizeRule = function(width) {
-      //
-      // }
-    },
-    // oneditresize:function(size) {
-    //   this.resizeRule(size.width);
-    // },
-    oneditsave: function() {
-
     }
 	});
 </script>
