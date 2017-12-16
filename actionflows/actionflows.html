@@ -3,12 +3,25 @@
 		category: 'advanced',
 		color: '#E0C67E',
 		defaults: {
-      name: {value:"action"},
-      info: {value:""}
+      info: {value: "Describe your action API here."},
+      untilproptype: {value: "num"},
+      proptype: {value: "msg"},
+      name: {value: "action"},
+      prop: {value: "loop"},
+      untilprop: {value: 1},
+      until: {value: "lt"},
+      loop: {value: "none"},
+      perf: {value: false}
 		},
 		inputs:1,
 		outputs:1,
-		icon: "actionflows.png",
+    icon: function() {
+      if (this.loop == 'none' || typeof this.loop == 'undefined') {
+        return "actionflows.png";
+      }else{
+        return "loopflow.png";
+      }
+    },
     paletteLabel: "action",
 		label: function() {
 			return this.name||"action";
@@ -26,12 +39,44 @@
           mode: 'ace/mode/markdown',
           value: $("#node-input-info").val()
       });
-      node.editor.focus();
+
+      // Support looping
+      $('#node-input-prop').typedInput({
+        typeField: $("#node-input-proptype"),
+        types:['flow','global','msg'],
+        default: 'msg'
+      });
+      $('#node-input-untilprop').typedInput({
+        types:['flow','global','msg','str','num','bool'],
+        typeField: $("#node-input-untilproptype"),
+        default: 'num'
+      });
+      setTimeout(function() { // typedInput paint refresh bug
+        $('#node-input-loop').change(function(){
+          if ($(this).val() == 'none') {
+            $('.af-loop').hide();
+          }else{
+            $('.af-loop').show();
+          }
+        });
+        if ($("#node-input-loop").val() == "none") {
+          $('.af-loop').hide();
+        }else{
+          $('.af-loop').show();
+        }
+      }, 1);
     },
     oneditsave: function() {
       $("#node-input-info").val(this.editor.getValue());
       this.editor.destroy();
       delete this.editor;
+
+      // Support looping
+      if ($("#node-input-loop").val() == "none") {
+        this._def.icon='actionflows.png';
+      }else{
+        this._def.icon='loopflow.png';
+      }
     },
     oneditcancel: function() {
       this.editor.destroy();
@@ -90,6 +135,34 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row">
+        <label><i class="fa fa-rotate-right"></i> <span>Looping</span></label>
+        <select id="node-input-loop" style="width:26%; margin-right:10px;">
+          <option value="none">none</option>
+          <option value="watch">watch</option>
+          <option value="decrement">decrement</option>
+          <option value="increment">increment</option>
+          <option value="incfromzero">inc. from zero</option>
+        </select>
+        <div class="af-loop" style="display:inline;">
+          <input type="text" id="node-input-prop" style="width:40%;">
+          <input type="hidden" id="node-input-proptype"><br/>
+        </div>
+    </div>
+    <div class="form-row af-loop">
+      <label style="text-align:right;"><span style="margin-right:3px;">Until</span></label>
+      <select id="node-input-until" style="width:20%; margin-right:10px;">
+        <option value="eq">==</option>
+        <option value="neq">!=</option>
+        <option value="lt">&lt;</option>
+        <option value="lte">&lt;=</option>
+        <option value="gt">&gt;</option>
+        <option value="gte">&gt;=</option>
+        <option value="cont">contains</option>
+      </select>
+      <input type="text" id="node-input-untilprop" style="width:46%;">
+      <input type="hidden" id="node-input-untilproptype"><br/>
+    </div>
     <div class="form-row" style="margin-bottom: 0px;">
       <label for="node-input-info">Description</label>
       <a href="https://guides.github.com/features/mastering-markdown/" target="_blank" style="font-size: 0.8em; float: right;">markdown</a>
@@ -97,6 +170,12 @@
     </div>
     <div class="form-row node-text-editor-row">
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-description-editor"></div>
+    </div>
+    <div class="form-row" id="node-loop-perf">
+        <input type="checkbox" id="node-input-perf" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-perf" style="width: 70%;">
+          <span>Debug execution time?</span>
+        </label>
     </div>
 </script>
 <script type="text/x-red" data-template-name="actionflows_in">
