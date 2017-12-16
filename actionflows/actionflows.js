@@ -1,4 +1,8 @@
 module.exports = function(RED) {
+  //
+  // TODO: include running status indicator
+  // include performance debug output?
+  //
   RED.nodes.registerType("actionflows", actionflows);
   function actionflows(config) {
     RED.nodes.createNode(this, config);
@@ -11,7 +15,7 @@ module.exports = function(RED) {
     }
     var event = "af:" + nodeID;
     var handler = function(msg) {
-        node.receive(msg);
+      node.receive(msg);
     }
     RED.events.on(event, handler);
     this.on("input", function(msg) {
@@ -19,6 +23,10 @@ module.exports = function(RED) {
         if (typeof msg._afIndex == 'undefined') {
           msg._afID = [];
           msg._afIndex = 0;
+          if (config.perf) {
+            msg._afExetime = process.hrtime();
+          }
+          node.status({fill:"green",shape:"dot",text: "running" });
         }
         if (msg._afIndex < af[nodeID].ins.length) {
           msg._afIndex++;
@@ -28,12 +36,19 @@ module.exports = function(RED) {
           if (msg._afID.length == 0){
             delete msg._afIndex;
             delete msg._afID;
+            if (config.perf) {
+              var t = process.hrtime(msg._afExetime);
+              node.warn("Execution time: " + t[0] + "s and " + t[1]/1000000 + "ms");
+              delete msg._afExetime;
+            }
+            node.status({});
           }
           this.send(msg);
         }
     });
     this.on("close",function() {
         RED.events.removeListener(event, handler);
+        node.status({});
     });
   }
   RED.nodes.registerType("actionflows_in", actionflows_in);
