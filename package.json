@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-actionflows",
   "version": "0.0.1",
-  "description": "Provides a set of nodes to enable an extendable design pattern for flows.",
+  "description": "Create extendable, loopable, and reusable design patterns for flows.",
   "author": "Stephen J. Carnam <steveorevo@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -10,8 +10,11 @@
     "actions",
     "filters",
     "plugins",
+    "iterate",
     "extend",
+    "repeat",
     "flows",
+    "loop",
     "api"
   ],
   "repository": {
