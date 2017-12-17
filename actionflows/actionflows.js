@@ -1,14 +1,9 @@
 module.exports = function(RED) {
-  //
-  // TODO: include running status indicator
-  // include performance debug output?
-  //
   RED.nodes.registerType("actionflows", actionflows);
   function actionflows(config) {
     RED.nodes.createNode(this, config);
     var node = this;
-    var af = getActionFlows();
-    node.context().global.set('actionflows', af);
+    node.context().global.set('actionflows', getActionFlows());
     var nodeID = config.id;
     if (typeof config._alias != 'undefined') {
       nodeID = config._alias;
@@ -20,30 +15,32 @@ module.exports = function(RED) {
     RED.events.on(event, handler);
     this.on("input", function(msg) {
         var af = node.context().global.get('actionflows');
-        if (typeof msg._afIndex == 'undefined') {
-          msg._afID = [];
-          msg._afIndex = 0;
-          if (config.perf) {
-            msg._afExetime = process.hrtime();
-          }
+        if (typeof msg._af == 'undefined') {
+          msg._af = {};
+          msg._af["stack"] = [];
+        }
+        if (typeof msg._af[nodeID] == 'undefined') {
+          msg._af[nodeID] = {
+            execTime: process.hrtime(),
+            ins: af[nodeID].ins,
+            index: 0
+          };
           node.status({fill:"green",shape:"dot",text: "running" });
         }
-        if (msg._afIndex < af[nodeID].ins.length) {
-          msg._afIndex++;
-          msg._afID.push(event);
-          RED.events.emit("af:" + af[nodeID].ins[msg._afIndex - 1].id, msg);
+        if (msg._af[nodeID].index < msg._af[nodeID].ins.length) {
+          msg._af["stack"].push(event);
+          msg._af[nodeID].index++;
+          RED.events.emit("af:" + msg._af[nodeID].ins[msg._af[nodeID].index - 1].id, msg);
         }else{
-          if (msg._afID.length == 0){
-            delete msg._afIndex;
-            delete msg._afID;
-            if (config.perf) {
-              var t = process.hrtime(msg._afExetime);
-              node.warn("Execution time: " + t[0] + "s and " + t[1]/1000000 + "ms");
-              delete msg._afExetime;
-            }
-            node.status({});
+          if (config.perf) {
+            var t = process.hrtime(msg._af[nodeID].execTime);
+            node.warn("Execution time: " + t[0] + "s and " + t[1]/1000000 + "ms");
           }
-          this.send(msg);
+          if (msg._af["stack"].length == 0) {
+            delete msg._af;
+          }
+          node.status({});
+          node.send(msg);
         }
     });
     this.on("close",function() {
@@ -76,7 +73,7 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var node = this;
     this.on('input', function(msg) {
-      RED.events.emit(msg._afID.pop(), msg); // return to the action orig. flow
+      RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
 		});
   }
 
