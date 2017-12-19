@@ -1,5 +1,45 @@
 # node-red-contrib-actionflows
-Provides nodes to enable an extendable design pattern for flows. ActionFlows
+A set of nodes that allow you to create extensible flows, reusable flows, looped
+flows, prioritized flows, and analyze flow performance benchmarks with nanosecond
+precision. ActionFlows enable the ability to group flows into "libraries" by
+using NodeRED's subflow capabilities. You can organize flows for readability and
+create extendable design patterns. To understand ActionFlows, review each section
+starting with Basics below and each section's examples.
+
+## Basics
+
+## Benchmarks
+
+## Priorities
+
+## Nesting
+
+## Loops
+
+### None
+
+### Watch
+
+### Decrement
+
+### Increment
+
+### Increment From Zero
+
+## Libraries
+
+### Private actions
+
+### Private flows
+
+## Advanced
+Overrides, invalidating segments at runtime, manipulating msg._af
+
+## Installation
+
+
+
+ ,  Provides nodes to enable an extendable design pattern for flows. ActionFlows
 can streamline the appearance of flows in a similar way that Node-RED's native
 subflows work or the link nodes' "virtual wires"; invoking flow segments located
 elsewhere. Unlike link nodes or subflows, flows that use the actionflows node do
@@ -17,7 +57,7 @@ with a name of an existing action node followed by a space, hyphen, or underscor
 For instance the default name `action in` or `action_in` would be invoked when
 the `action` node is encountered. The `actionflows`, `action in`, and `action out`
 nodes can exist in any combination of multiple different tabs, inside or outside
-of subflows. 
+of subflows.
 
 Inspired by WordPress' core actions and filters API (but faster) that inarguably
 enabled one of the world's largest and most prolific plugin communities. This

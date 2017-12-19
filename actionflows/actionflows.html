@@ -11,23 +11,40 @@
       untilprop: {value: 0},
       until: {value: "gt"},
       loop: {value: "none"},
-      perf: {value: false}
+      perf: {value: false},
+      private: {value: false}
 		},
 		inputs:1,
 		outputs:1,
     icon: function() {
       if (this.loop == 'none' || typeof this.loop == 'undefined') {
-        return "actionflows.png";
+        if (this.private) {
+          return "actionflows-locked.png";
+        }else{
+          return "actionflows.png";
+        }
       }else{
-        return "loopflow.png";
+        if (this.private) {
+          return "loopflow-locked.png";
+        }else{
+          return "loopflow.png";
+        }
       }
     },
     paletteLabel: "action",
 		label: function() {
-      if (this.loop == "none") {
-        this._def.icon='actionflows.png';
+      if (this.loop == 'none') {
+        if (this.private) {
+          this._def.icon = "actionflows-locked.png";
+        }else{
+          this._def.icon = "actionflows.png";
+        }
       }else{
-        this._def.icon='loopflow.png';
+        if (this.private) {
+          this._def.icon = "loopflow-locked.png";
+        }else{
+          this._def.icon = "loopflow.png";
+        }
       }
 			return this.name||"action";
 		},
@@ -89,13 +106,19 @@
 		defaults: {
       name: {value:"action in"},
       priority: {value:"50", required:true, validate:RED.validators.number()},
-      links: {value: []}
+      links: {value: []},
+      private: {value: true}
 		},
 		inputs:0,
 		outputs:1,
-		icon: "actionflows.png",
+		icon: "actionflows-locked.png",
     paletteLabel: "action in",
 		label: function() {
+      if (this.private) {
+        this._def.icon = "actionflows-locked.png";
+      }else{
+        this._def.icon = "actionflows.png";
+      }
 			return this.name||"action in";
 		},
     labelStyle: function() {
@@ -170,7 +193,13 @@
     <div class="form-row node-text-editor-row">
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-description-editor"></div>
     </div>
-    <div class="form-row" id="node-loop-perf">
+    <div class="form-row" id="node-action-private">
+        <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-private" style="width: 70%;">
+          <span>Private action; invoke flows only on this tab.</span>
+        </label>
+    </div>
+    <div class="form-row" id="node-action-perf">
         <input type="checkbox" id="node-input-perf" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-perf" style="width: 70%;">
           <span>Debug action cycle execution time?</span>
@@ -186,6 +215,12 @@
         <label for="node-input-priority"><i class="fa fa-flag"></i> Priority</label>
         <input type="text" id="node-input-priority" style="text-align:end; width:50px !important">
     </div>
+    <div class="form-row" id="node-actionin-private">
+        <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-private" style="width: 70%;">
+          <span>Private flow; only invoked by actions on this tab.</span>
+        </label>
+    </div>
 </script>
 <script type="text/x-red" data-template-name="actionflows_out">
     <div class="form-row">
@@ -195,14 +230,35 @@
 </script>
 <script type="text/x-red" data-help-name="actionflows"></script>
 <script type="text/x-red" data-help-name="actionflows_in">
-  <p>Description...</p>
+  <p>Use the ActionFlows <code>in</code> node to define the start
+  of a flow segment.</p>
+  <h4>Name</h4>
+  <p>Name the node with a prefix that matches the name of an existing
+  <code>action</code> node. Use a space, underscore, hyphen or period
+  to separate the prefix from your segment&#39;s own unique name/description.
+  </p>
+  <h4>Priority</h4>
+  <p>Use the priority field to determine the priority order for the flow segment.
+  The flow segment with the lowest priority number will execute sooner than seqments
+  with higher numbers (0 to 99). It is recommend that you leave the default (50)
+  if execution order is not required. I.e. two flows with the same name will
+  will execute in priority order sequence; 45 will execute before 50, etc.</p>
+
   <h3>References</h3>
   <ul>
        <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>
    </ul>
 </script>
 <script type="text/x-red" data-help-name="actionflows_out">
-  <p>Description...</p>
+  <p>Use the ActionFlows <code>out</code> node to define the end of a flow
+  segment.</p>
+  <h4>Name</h4>
+  <p>Name the node with a prefix that matches the name of an existing
+  <code>in</code> node or <code>action</code> node. Use a space, underscore,
+  hyphen or period to separate the prefix from your segment&#39;s own unique
+  name/description. A flow that reaches the <code>out</code> node resumes
+  execution at the original matching <code>action</code> node.
+  </p>
   <h3>References</h3>
   <ul>
        <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>

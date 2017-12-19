@@ -18,6 +18,7 @@ module.exports = function(RED) {
 
         // Check loop conditional
         if (stopLoop()) {
+          // TODO: check stack and remove msg._af
           node.status({});
           node.send(msg);
           return;
@@ -271,6 +272,8 @@ module.exports = function(RED) {
       });
       af[a.id] = a;
     });
+
+    // TODO: Enforce private settings
     return af;
   }
 }
