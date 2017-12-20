@@ -33,10 +33,12 @@ corresponding `action in` nodes that will be activated. Use the `action` node's
 name as a prefix for all subsequent `action in` nodes that you wish to be
 callable by the `action` node. For instance, an `action` node named "Sample",
 will activate any `action in` nodes with names like "Sample in", "Sample-in",
-"Sample Exercise", or "Sample.Acme.com".
+"Sample_Exercise", or "Sample.Acme.com".
 
-> A prefix is an existing `action` node's name followed by
-> a space, hyphen, or a period.
+```
+A prefix is an existing `action` node's name followed by
+a space, hyphen, underscore, or a period.
+```
 
 If present, ActionFlows will invoke multiple matching prefix named nodes
 sequentially.
