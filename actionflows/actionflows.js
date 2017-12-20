@@ -259,21 +259,25 @@ module.exports = function(RED) {
     });
     var af = {};
 
-    // associate actionflows with ins
+    // Associate actionflows with ins
     actionflows.forEach(function(a) {
       a.ins = [];
       ins.forEach(function(i) {
-        if (S(i.name).replaceAll("_", " ") // search for prefix while preventing
-                     .replaceAll("-", " ") // substr match (i.e. 'he' in 'head')
-                     .replaceAll(".", " ") // support domain format
-                     .startsWith(a.name + " ")) {
-          a.ins.push(i);
+
+        // Enforce private settings
+        if ((a.private == false && i.private == false) ||
+            (a.private == true && a.z == i.z) ||
+            (i.private == true && a.z == i.z)) {
+              if (S(i.name).replaceAll("_", " ") // search for prefix while preventing
+                           .replaceAll("-", " ") // substr match (i.e. 'he' in 'head')
+                           .replaceAll(".", " ") // support domain format
+                           .startsWith(a.name + " ")) {
+                a.ins.push(i);
+              }
         }
       });
       af[a.id] = a;
     });
-
-    // TODO: Enforce private settings
     return af;
   }
 }
