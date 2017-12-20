@@ -77,6 +77,8 @@ override by other authors (if need be).
 The `action` node allows execution of `action in/out` node sequences based on
 a conditional loop.
 
+![ActionFlow Loops](/actionflows/demo/loops.jpg?raw=true "Loops")
+
 ### None
 
 ### Watch
