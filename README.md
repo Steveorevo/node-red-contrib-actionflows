@@ -69,7 +69,7 @@ execution time?" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
 
-![ActionFlow Benchmarks](/actionflows/demo/bench.png?raw=true "Debug Execution Time")
+![ActionFlow Benchmarks](/actionflows/demo/bench2.png?raw=true "Debug Execution Time")
 
 > Note: Benchmarks report how long it takes to run all matching `action in/out`
 > flows for one given iteration. Loops return to the `action` node before
@@ -82,7 +82,7 @@ will execute. I.e. An `action in` node with #1 priority executes before a #2
 priority flow sequence, etc. Recommend you leave the priority at 50 to allow
 override by other authors (if need be).
 
-![ActionFlow Priorities](/actionflows/demo/priority.png?raw=true "Flow Priorities")
+![ActionFlow Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
 
 ### Nesting
 
