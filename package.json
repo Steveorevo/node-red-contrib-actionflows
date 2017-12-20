@@ -21,9 +21,6 @@
     "type": "git",
     "url": "https://github.com/Steveorevo/node-red-contrib-actionflows.git"
   },
-  "dependencies": {
-    "string": "git://github.com/Steveorevo/string.js.git"
-  },
   "node-red": {
     "nodes": {
       "actionfilters": "actionflows/actionflows.js"

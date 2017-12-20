@@ -240,7 +240,6 @@ module.exports = function(RED) {
   function getActionFlows() {
     var RED2 = require.main.require('node-red');
     var flows = RED2.nodes.getFlows().flows;
-    var S = require('string');
     var actionflows = [];
     var ins = [];
     flows.forEach(function(f) {
@@ -268,10 +267,10 @@ module.exports = function(RED) {
         if ((a.private == false && i.private == false) ||
             (a.private == true && a.z == i.z) ||
             (i.private == true && a.z == i.z)) {
-              if (S(i.name).replaceAll("_", " ") // search for prefix while preventing
-                           .replaceAll("-", " ") // substr match (i.e. 'he' in 'head')
-                           .replaceAll(".", " ") // support domain format
-                           .startsWith(a.name + " ")) {
+              if (i.name.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+                        .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+                        .replace(new RegExp("\\.", 'g'), " ") // support domain format
+                        .startsWith(a.name + " ")) {
                 a.ins.push(i);
               }
         }
