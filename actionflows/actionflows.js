@@ -18,7 +18,10 @@ module.exports = function(RED) {
 
         // Check loop conditional
         if (stopLoop()) {
-          // TODO: check stack and remove msg._af
+          // Move on
+          if (msg._af["stack"].length == 0) {
+            delete msg._af;
+          }
           node.status({});
           node.send(msg);
           return;
@@ -59,6 +62,9 @@ module.exports = function(RED) {
             }
           }else{
             // Move on
+            if (msg._af["stack"].length == 0) {
+              delete msg._af;
+            }
             node.status({});
             node.send(msg);
           }

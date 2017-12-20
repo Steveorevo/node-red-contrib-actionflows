@@ -7,10 +7,12 @@
   "keywords": [
     "node-red",
     "extendable",
+    "libraries",
     "actions",
     "filters",
-    "plugins",
     "iterate",
+    "plugins",
+    "subflow",
     "extend",
     "repeat",
     "flows",
