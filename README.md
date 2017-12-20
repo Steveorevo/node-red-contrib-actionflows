@@ -64,7 +64,7 @@ the "Priorities" section).
 ### Benchmarks
 
 Benchmarks in the `action` node allow you to see how long all `action in` flow
-sequences take to execute. Use the checkbox labeled "Debug action cycle
+sequences take to execute. Use the checkbox labelled "Debug action cycle
 execution time?" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
@@ -78,7 +78,7 @@ action.
 ### Priorities
 
 Priorities 1 to 99. The lower the number, the earlier a defined flow sequence
-will execute. I.e. An `action in` node with #1 priority executes before an #2
+will execute. I.e. An `action in` node with #1 priority executes before a #2
 priority flow sequence, etc. Recommend you leave the priority at 50 to allow
 override by other authors (if need be).
 
