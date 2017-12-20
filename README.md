@@ -65,15 +65,15 @@ the "Priorities" section).
 
 Benchmarks in the `action` node allow you to see how long all `action in` flow
 sequences take to execute. Use the checkbox labeled "Debug action cycle
-execution time?" to see a debug output indicating how long it took to run all of
+execution time?" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
 
 ![ActionFlow Benchmarks](/actionflows/demo/bench.png?raw=true "Debug Execution Time")
 
 > Note: Benchmarks report how long it takes to run all matching `action in/out`
-> flows. Loops return to the `action` node before repeating may generate
-> multiple debug outputs; one for each loop condition.
+> flows for one given iteration. Loops return to the `action` node before
+> repeating and may generate multiple debug outputs.
 
 ### Priorities
 
