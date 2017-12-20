@@ -41,7 +41,7 @@ will activate any `action in` nodes with names like "Sample in", "Sample-in",
 If present, ActionFlows will invoke multiple matching prefix named nodes
 sequentially.
 
-![ActionFlow Sequence](/actionflows/demo/basic2.png?raw=true "Sequential Flow Segments")
+![ActionFlow Sequence](/actionflows/demo/basic3.png?raw=true "Sequential Flow Segments")
 
 In the example above:
 
@@ -76,6 +76,8 @@ override by other authors (if need be).
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
 a conditional loop.
+
+![ActionFlow Loops](/actionflows/demo/loops.jpg?raw=true "Loops")
 
 ### None
 
