@@ -29,7 +29,7 @@ the `action out` node.
 
 Unlike the `links` node, the `action` node invokes the `action in` node by a
 prefix naming schema. An `action` node's name determines the name of the
-corresponding `action in` nodes that will be activated. Use the `action` node's
+corresponding `action in` node that will be activated. Use the `action` node's
 name as a prefix for all subsequent `action in` nodes that you wish to be
 callable by the `action` node. For instance, an `action` node named "Sample",
 will activate any `action in` nodes with names like "Sample in", "Sample-in",
@@ -40,7 +40,7 @@ A prefix is an existing `action` node's name followed by
 a space, hyphen, underscore, or a period.
 ```
 
-If present, ActionFlows will invoke multiple matching prefix named nodes
+If present, ActionFlows will invoke *multiple* matching prefix named nodes
 sequentially.
 
 ![ActionFlow Sequence](/actionflows/demo/basic3.png?raw=true "Sequential Flow Segments")
@@ -52,19 +52,28 @@ In the example above:
 3) The `action in` node (named "action 2") is called after the last `action out` node and "World" is replaced with "Mars".
 
 The versatility of ActionFlows allows the adding of additional flow sequences
-after the original flow has been authored. The `action in` node's flow sequences
+after the original flow has been authored. The `action in` node's flow segments
 can be created or imported dynamically (such as with the `flowman` node). Flows
 can be defined on other tabs or within subflows (see the "Libraries" section
 below) or restricted to the same tab or subflow where the calling `action` node
 has been defined.
 
-Flow sequence order can also be defined by the sequence author (see the
-"Priorities" section).
+Flow sequence order can also be changed by the `action in` node's settings (see
+the "Priorities" section).
 
 ### Benchmarks
 
-Benchmarks in the `action` node allow you to see how long an `action in` flow
-sequence takes to execute.
+Benchmarks in the `action` node allow you to see how long all `action in` flow
+sequences take to execute. Use the checkbox labeled "Debug action cycle
+execution time?" to see a debug output indicating how long it took to run all of
+the corresponding `action in/out` flow segments before returning to the calling
+action.
+
+![ActionFlow Benchmarks](/actionflows/demo/bench.png?raw=true "Debug Execution Time")
+
+> Note: Benchmarks report how long it takes to run all matching `action in/out`
+> flows. Loops return to the `action` node before repeating may generate
+> multiple debug outputs; one for each loop condition.
 
 ### Priorities
 
