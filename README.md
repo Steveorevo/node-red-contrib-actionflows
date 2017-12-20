@@ -73,6 +73,8 @@ will execute. I.e. An `action in` node with #1 priority executes before an #2
 priority flow sequence, etc. Recommend you leave the priority at 50 to allow
 override by other authors (if need be).
 
+![ActionFlow Priorities](/actionflows/demo/priority.png?raw=true "Flow Priorities")
+
 ### Nesting
 
 ## Loops
