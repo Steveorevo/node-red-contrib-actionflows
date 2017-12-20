@@ -86,6 +86,33 @@
           $('.af-loop').show();
         }
       }, 1);
+      $("input#node-input-name").change(function(){
+        calcActionIns();
+      });
+      $("input#node-input-private").change(function(){
+        calcActionIns();
+      });
+      var node = this;
+      function calcActionIns() {
+        var afin = RED.nodes.filterNodes({type:"actionflows_in"});
+        var priv = $("input#node-input-private").is(':checked');
+        var ins = [];
+        // Calc action ins
+        afin.forEach(function(i) {
+          if ((priv == false && i.private == false) ||
+              (priv == true && node.z == i.z) ||
+              (i.private == true && node.z == i.z)) {
+                if (i.name.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+                          .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+                          .replace(new RegExp("\\.", 'g'), " ") // support domain format
+                          .startsWith($("input#node-input-name").val() + " ")) {
+                  ins.push(i);
+                }
+          }
+        });
+        $("#action-dialog-flow-count").text("There are " + ins.length.toString() + " invokable flows matching this action.");
+      }
+      calcActionIns();
     },
     oneditsave: function() {
       var node = this;
@@ -127,6 +154,45 @@
     oneditprepare: function() {
       var node = this;
       $("#node-input-priority").spinner({min:1,max:100});
+
+      $("input#node-input-name").change(function(){
+        calcActionIns();
+      });
+      $("input#node-input-private").change(function(){
+        calcActionIns();
+      });
+      var node = this;
+      function calcActionIns() {
+        var afin = RED.nodes.filterNodes({type:"actionflows"});
+        var priv = $("input#node-input-private").is(':checked');
+        var acts = [];
+        // Calc action ins
+        afin.forEach(function(a) {
+          if ((priv == false && a.private == false) ||
+              (priv == true && node.z == a.z) ||
+              (a.private == true && node.z == a.z)) {
+                var aname = $("input#node-input-name").val();
+                aname = aname.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+                     .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+                     .replace(new RegExp("\\.", 'g'), " ") // support domain format
+                if (getLeftMost(aname, " ") == a.name) {
+                  acts.push(a);
+                }
+          }
+        });
+        $("#action-dialog-action-count").text("There are " + acts.length.toString() + " calling actions matching this flow.");
+      }
+      function getLeftMost(sSub, sFind){
+        for (var i = 0; i < sSub.length; i = i + 1) {
+          var f = sSub.indexOf(sFind, i);
+          if (f != -1) {
+             return sSub.substr(0, f);
+             break;
+          }
+        }
+        return sSub;
+      };
+      calcActionIns();
     }
 	});
 </script>
@@ -152,7 +218,7 @@
 	});
 </script>
 <script type="text/x-red" data-template-name="actionflows">
-    <div class="form-row">
+    <div class="form-row" id="actionflows-name">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
@@ -193,10 +259,13 @@
     <div class="form-row node-text-editor-row">
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-description-editor"></div>
     </div>
+    <div class="form-row form-tips" id="action-dialog-flow-count">
+      There are 0 invokable flows matching this action.
+    </div>
     <div class="form-row" id="node-action-private">
         <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-private" style="width: 70%;">
-          <span>Private action; invoke flows only on this tab.</span>
+          <span>Private action; limit to flows on this tab or subflow.</span>
         </label>
     </div>
     <div class="form-row" id="node-action-perf">
@@ -218,8 +287,11 @@
     <div class="form-row" id="node-actionin-private">
         <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-private" style="width: 70%;">
-          <span>Private flow; only invoked by actions on this tab.</span>
+          <span>Private flow; limit access to this tab or subflow.</span>
         </label>
+    </div>
+    <div class="form-row form-tips" id="action-dialog-action-count">
+      There are 0 calling actions matching this flow.
     </div>
 </script>
 <script type="text/x-red" data-template-name="actionflows_out">
@@ -230,7 +302,7 @@
 </script>
 <script type="text/x-red" data-help-name="actionflows"></script>
 <script type="text/x-red" data-help-name="actionflows_in">
-  <p>Use the ActionFlows <code>in</code> node to define the start
+  <p>Use the <code>action in</code> node to define the start
   of a flow segment.</p>
   <h4>Name</h4>
   <p>Name the node with a prefix that matches the name of an existing
@@ -243,7 +315,12 @@
   with higher numbers (0 to 99). It is recommend that you leave the default (50)
   if execution order is not required. I.e. two flows with the same name will
   will execute in priority order sequence; 45 will execute before 50, etc.</p>
-
+  <h4>Private flow</h4>
+  <p>Use the private flow checkbox to limit this <code>action in</code> node&#39;s
+  flow to <code>action</code> nodes calling from within the same tab or within the
+  same subflow. Uncheck to allow actions to invoke this <code>action in</code> node
+  from other tabs or subflows (where the <code>action</code> node&#39;s own private
+  checkbox is unchecked).</p>
   <h3>References</h3>
   <ul>
        <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>
