@@ -10,7 +10,7 @@ review each section starting with Basics below and each section's examples.
 The following example of ActionFlows' `action` node does nothing! "Hello
 World" is placed in the `msg.payload` and passes through the `action` node and
 can be seen in the debug output; but it's use and versatility can be illustrated
-with the following descriptions.
+with the followup descriptions.
 
 ![Action Node Basics](/actionflows/demo/basic.png?raw=true "The Action Node")
 
@@ -28,7 +28,8 @@ the `action out` node.
 ![Action In/Out Basics](/actionflows/demo/basic2.png?raw=true "The Action In and Action Out Nodes")
 
 Unlike the `links` node, the `action` node invokes the `action in` node by a
-prefix naming schema. An `action` node's name determines the name of the
+prefix naming schema; allowing for multiple add-on flow segments to be appended
+to the original flow. An `action` node's name determines the name of the
 corresponding `action in` node that will be activated. Use the `action` node's
 name as a prefix for all subsequent `action in` nodes that you wish to be
 callable by the `action` node. For instance, an `action` node named "Sample",
@@ -41,7 +42,8 @@ a space, hyphen, underscore, or a period.
 ```
 
 If present, ActionFlows will invoke *multiple* matching prefix named nodes
-sequentially.
+sequentially. By default, the sequence order is by creation order but can be
+changed using the `action in` node's Priority property.
 
 ![ActionFlow Sequence](/actionflows/demo/basic3.png?raw=true "Sequential Flow Segments")
 
