@@ -16,7 +16,15 @@ with the followup descriptions.
 
 ActionFlows' initial purpose was to allow for "after market" flow extendability.
 Complex flows can be customized without modifying the original author's flow.
-This technique can also be used to organize your existing flows for readability.
+This technique can also be used to organize your existing flows for readability,
+but links and subflows maybe better suited for that single purpose. ActionFlows
+provide additional key functionality (described later in this document):
+
+* "Late binding"; extend flows without modifying the original flow
+* Looping; call flow segments with conditional iteration
+* Prioritize flows; allow for OOP-like overrides
+* Private and shared flows
+
 Simply include the `action` flow inline at specific points where you would like
 to enable vendor customization. Like Node-RED's native subflows, a description
 field allows you to create optional API (application programming interface)
