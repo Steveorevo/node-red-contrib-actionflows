@@ -78,13 +78,36 @@ action.
 > repeating and may generate multiple debug outputs.
 
 ### Priorities
-
-Priorities 1 to 99. The lower the number, the earlier a defined flow sequence
-will execute. I.e. An `action in` node with #1 priority executes before a #2
-priority flow sequence, etc. Recommend you leave the priority at 50 to allow
-override by other authors (if need be).
+Priorities allow you to define ActionFlows that take precedence over other
+ActionFlows. Inspired by [WordPress' core actions and filters API](https://codex.wordpress.org/Plugin_API#Hooks:_Actions_and_Filters), Priorities
+are at the heart of manageable extendability. In our Basic example sequence
+we see that two `action in/out` flow sequences have been defined; each changing
+the "Hello World" in `msg.payload` to eventually become "Hello Mars, and Solar
+System!". However, if we simply change the `action in/out` flow sequences, we
+end up with "Hello Mars" in the `msg.payload`.
 
 ![ActionFlow Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
+
+Here we modify the node `action in` and `action 2` to execute in the reverse
+order thus changing the debug output message. Open the settings for the nodes
+and change the Priority for `action 2` to 45 and leave `action in` with Priority
+50 (the default). Now when the `action` node is encountered, it will seek out
+the `action in/out` flows and run them in a different sequence; the lower the
+Priority number the earlier the flow order will be executed. Two flows with the
+same Priority number will execute sequentially starting with whichever flow was
+defined first.
+
+Priority numbers can vary between 1 to 99. The lower the number, the earlier a
+defined flow sequence will execute. I.e. An `action in` node with #1 priority
+executes before a #2 priority, etc. It is recommended that you leave the
+priority numbers at their default of 50 to allow overrides by other authors
+(if need be). Often times, multiple vendors or "plugin" authors may provide
+future functionality that are priority dependent. For example, a
+localization/translation service plugin may want to change their Priority
+for their `action in/out` flow to 95 to ensure that their flow sequence runs
+last. Thereby ensuring that they have all messages at hand that might need to
+be translated from one spoken language to another; even if other plugin authors
+include their `action in/out` flows leveraging the same `action` node.
 
 ### Nesting
 
@@ -121,7 +144,8 @@ from other tabs or subflows (where the `action` node's own private
 checkbox is unchecked.
 
 ## Advanced
-Overrides, invalidating segments at runtime, manipulating msg._af
+Overrides, invalidating segments at runtime, manipulating msg._af and the
+global.actionflows object.
 
 ## Installation
 
