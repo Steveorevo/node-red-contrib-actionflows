@@ -111,6 +111,7 @@ include their `action in/out` flows leveraging the same `action` node.
 
 ### Nesting
 
+![ActionFlow Nesting](/actionflows/demo/nested.gif?raw=true "ActionFlow Nesting")
 
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
