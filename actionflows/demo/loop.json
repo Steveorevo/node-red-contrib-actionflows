@@ -1,0 +1,116 @@
+[
+    {
+        "id": "abe837c2.6055d8",
+        "type": "inject",
+        "z": "d2e07100.9ad6c",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 100,
+        "y": 40,
+        "wires": [
+            [
+                "cbb5939f.a84658"
+            ]
+        ]
+    },
+    {
+        "id": "cbb5939f.a84658",
+        "type": "actionflows",
+        "z": "d2e07100.9ad6c",
+        "info": "Describe your action API here.",
+        "untilproptype": "num",
+        "proptype": "msg",
+        "name": "action",
+        "prop": "loop",
+        "untilprop": "2",
+        "until": "gt",
+        "loop": "inc0",
+        "perf": false,
+        "private": false,
+        "x": 290,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4f225489.490ed4",
+        "type": "actionflows_in",
+        "z": "d2e07100.9ad6c",
+        "name": "action in",
+        "priority": "50",
+        "links": [],
+        "private": true,
+        "x": 120,
+        "y": 100,
+        "wires": [
+            [
+                "e4e78e49.b2cb68"
+            ]
+        ]
+    },
+    {
+        "id": "b3f8d51a.dafa68",
+        "type": "actionflows_out",
+        "z": "d2e07100.9ad6c",
+        "name": "action out",
+        "links": [],
+        "x": 480,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "e4e78e49.b2cb68",
+        "type": "change",
+        "z": "d2e07100.9ad6c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Testing #",
+                "tot": "str"
+            },
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "#",
+                "fromt": "str",
+                "to": "loop",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 300,
+        "y": 100,
+        "wires": [
+            [
+                "b3f8d51a.dafa68",
+                "32d4d58f.af8252"
+            ]
+        ]
+    },
+    {
+        "id": "32d4d58f.af8252",
+        "type": "debug",
+        "z": "d2e07100.9ad6c",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 490,
+        "y": 40,
+        "wires": []
+    }
+]

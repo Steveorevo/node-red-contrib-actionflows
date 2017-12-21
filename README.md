@@ -64,7 +64,7 @@ has been defined.
 Flow sequence order can also be changed by the `action in` node's settings (see
 the "Priorities" section).
 
-[Download the Basic example here.](/actionflows/demo/basic.json)
+[Download the Basic example flow here.](/actionflows/demo/basic.json)
 
 ### Benchmarks
 
@@ -129,13 +129,32 @@ In this simple animation, the main `action` node calls two defined flows; one
 other flows and nested flows complete their sequence. Watch the end of the
 animation above to view an overlay showing the complete flow path.
 
-[Download the Nesting example here.](/actionflows/demo/nested.json)
+[Download the Nesting example flow here.](/actionflows/demo/nested.json)
 
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
-a conditional loop.
+a conditional loop. Use the Looping drop down combo box to select the loop type.
+The default is "none" for no looping. In our example below, we will select the
+option "Increment from zero". This option is followed by the variable we'd like
+to use in our conditional loop. The "...from zero" ensures that the variable
+will be initialized to contain the numeric value 0 when the `action` node is
+first encountered in the given flow. The variable will be incremented by a
+numeric 1 each time all corresponding `action in/out` nodes have completed. An
+initial check of the condition occurs before each iteration. In this case, we
+will check if the variable is greater than 2; causing the loop to iterate three
+times (0, 1, 2).
 
-![ActionFlow Loops](/actionflows/demo/loops.jpg?raw=true "Loops")
+![ActionFlow Loop](/actionflows/demo/loop.png?raw=true "ActionFlow Loop")
+
+The `msg.loop` variable is accessible to our `change` node allow us to inject
+it into a string and output to the debug window. When the flow is run, the
+debug window should show three separate outputs; "Testing 0", "Testing 1", and
+"Testing 2" before execution of the flow is stopped.
+
+> Note: The `action` node icon will change from a lightening bolt
+> to a circular arrow to indicate the `action` is in loop mode.
+
+[Download the Loops example flow here.](/actionflows/demo/loop.json)
 
 ### None
 
