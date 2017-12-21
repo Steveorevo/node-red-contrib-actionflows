@@ -64,6 +64,8 @@ has been defined.
 Flow sequence order can also be changed by the `action in` node's settings (see
 the "Priorities" section).
 
+[Download the Basic example here.](/actionflows/demo/basic.json)
+
 ### Benchmarks
 
 Benchmarks in the `action` node allow you to see how long all `action in` flow

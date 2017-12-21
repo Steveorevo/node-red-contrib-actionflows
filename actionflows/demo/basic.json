@@ -1,0 +1,192 @@
+[
+    {
+        "id": "e47c0628.8d996",
+        "type": "inject",
+        "z": "344509a4.4e05ee",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 100,
+        "y": 40,
+        "wires": [
+            [
+                "d769f95b.ab5fd8"
+            ]
+        ]
+    },
+    {
+        "id": "af6a998b.83bde",
+        "type": "debug",
+        "z": "344509a4.4e05ee",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "payload",
+        "x": 550,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "d769f95b.ab5fd8",
+        "type": "change",
+        "z": "344509a4.4e05ee",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Hello World",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 260,
+        "y": 40,
+        "wires": [
+            [
+                "ce1ce404.7f661"
+            ]
+        ]
+    },
+    {
+        "id": "ce1ce404.7f661",
+        "type": "actionflows",
+        "z": "344509a4.4e05ee",
+        "info": "Describe your action API here.",
+        "untilproptype": "num",
+        "proptype": "msg",
+        "name": "action",
+        "prop": "loop",
+        "untilprop": "1",
+        "until": "gt",
+        "loop": "none",
+        "perf": false,
+        "private": false,
+        "x": 410,
+        "y": 40,
+        "wires": [
+            [
+                "af6a998b.83bde"
+            ]
+        ]
+    },
+    {
+        "id": "60f6e66.31e2118",
+        "type": "actionflows_in",
+        "z": "344509a4.4e05ee",
+        "name": "action in",
+        "priority": "50",
+        "links": [],
+        "private": true,
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "62c830ed.2bce2"
+            ]
+        ]
+    },
+    {
+        "id": "6854d839.fe442",
+        "type": "actionflows_out",
+        "z": "344509a4.4e05ee",
+        "name": "action out",
+        "links": [],
+        "x": 540,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "62c830ed.2bce2",
+        "type": "change",
+        "z": "344509a4.4e05ee",
+        "name": "",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "World",
+                "fromt": "str",
+                "to": "World, and Solar System!",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 100,
+        "wires": [
+            [
+                "6854d839.fe442"
+            ]
+        ]
+    },
+    {
+        "id": "33576e42.80c352",
+        "type": "actionflows_in",
+        "z": "344509a4.4e05ee",
+        "name": "action 2",
+        "priority": "50",
+        "links": [],
+        "private": true,
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "2afccd26.eeb6c2"
+            ]
+        ]
+    },
+    {
+        "id": "3f3be948.8507ae",
+        "type": "actionflows_out",
+        "z": "344509a4.4e05ee",
+        "name": "action 2",
+        "links": [],
+        "x": 540,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "2afccd26.eeb6c2",
+        "type": "change",
+        "z": "344509a4.4e05ee",
+        "name": "change World for Mars",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "World",
+                "fromt": "str",
+                "to": "Mars",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 160,
+        "wires": [
+            [
+                "3f3be948.8507ae"
+            ]
+        ]
+    }
+]
