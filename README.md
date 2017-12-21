@@ -16,6 +16,7 @@ with the followup descriptions.
 
 ActionFlows' initial purpose was to allow for "after market" flow extendability.
 Complex flows can be customized without modifying the original author's flow.
+This technique can also be used to organize your existing flows for readability.
 Simply include the `action` flow inline at specific points where you would like
 to enable vendor customization. Like Node-RED's native subflows, a description
 field allows you to create optional API (application programming interface)
@@ -110,8 +111,20 @@ be translated from one spoken language to another; even if other plugin authors
 include their `action in/out` flows leveraging the same `action` node.
 
 ### Nesting
+ActionFlows can be nested whereby a flow segment can include an `action` node
+that in turn, invokes additional `action in/out` flow segments. One way to trace
+an ActionFlows' sequence is to use the `delay` node. Be sure to set the delay
+to above 2 seconds to see the blue dot appear in the `action in/out` flow path
+and for the green dot and "running" indicator under the `action` active `action`
+node. Please see the animated gif below.
 
 ![ActionFlow Nesting](/actionflows/demo/nested.gif?raw=true "ActionFlow Nesting")
+
+In this simple animation, the main `action` node calls two defined flows; one
+`action in/out` node called "action in" and another called "action in 2". The
+"action in 2" flow contains an `action` node itself called "nested" that invokes
+the `action in/out` node named "nested in". Watch the end of the animation above
+to view the flow path.
 
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
