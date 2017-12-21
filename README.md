@@ -84,16 +84,16 @@ action.
 Priorities allow you to define ActionFlows that take precedence over other
 ActionFlows. Inspired by [WordPress' core actions and filters API](https://codex.wordpress.org/Plugin_API#Hooks:_Actions_and_Filters), Priorities
 are at the heart of manageable extendability. In our Basic example sequence
-we see that two `action in/out` flow sequences have been defined; each changing
+we see that two `action in/out` flow segments have been defined; each changing
 the "Hello World" in `msg.payload` to eventually become "Hello Mars, and Solar
 System!". However, if we simply change the `action in/out` flow sequences, we
 end up with "Hello Mars" in the `msg.payload`.
 
 ![ActionFlow Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
 
-Here we modify the node `action in` and `action 2` to execute in the reverse
+Here we modify the node "action in" and "action 2" to execute in the reverse
 order thus changing the debug output message. Open the settings for the nodes
-and change the Priority for `action 2` to 45 and leave `action in` with Priority
+and change the Priority for "action 2" to 45 and leave `action in` with Priority
 50 (the default). Now when the `action` node is encountered, it will seek out
 the `action in/out` flows and run them in a different sequence; the lower the
 Priority number the earlier the flow order will be executed. Two flows with the
@@ -101,7 +101,7 @@ same Priority number will execute sequentially starting with whichever flow was
 defined first.
 
 Priority numbers can vary between 1 to 99. The lower the number, the earlier a
-defined flow sequence will execute. I.e. An `action in` node with #1 priority
+defined flow segment will execute. I.e. An `action in` node with #1 priority
 executes before a #2 priority, etc. It is recommended that you leave the
 priority numbers at their default of 50 to allow overrides by other authors
 (if need be). Often times, multiple vendors or "plugin" authors may provide
