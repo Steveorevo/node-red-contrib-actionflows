@@ -127,6 +127,8 @@ In this simple animation, the main `action` node calls two defined flows; one
 other flows and nested flows complete their sequence. Watch the end of the
 animation above to view an overlay showing the complete flow path.
 
+[Download the Nesting example here.](/actionflows/demo/nested.json)
+
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
 a conditional loop.
