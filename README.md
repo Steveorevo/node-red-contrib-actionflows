@@ -115,16 +115,17 @@ ActionFlows can be nested whereby a flow segment can include an `action` node
 that in turn, invokes additional `action in/out` flow segments. One way to trace
 an ActionFlows' sequence is to use the `delay` node. Be sure to set the delay
 to above 2 seconds to see the blue dot appear in the `action in/out` flow path
-and for the green dot and "running" indicator under the `action` active `action`
-node. Please see the animated gif below.
+and for the green dot and "running" indicator under the active `action` node.
+Please see the animated gif below.
 
 ![ActionFlow Nesting](/actionflows/demo/nested.gif?raw=true "ActionFlow Nesting")
 
 In this simple animation, the main `action` node calls two defined flows; one
 `action in/out` node called "action in" and another called "action in 2". The
-"action in 2" flow contains an `action` node itself called "nested" that invokes
-the `action in/out` node named "nested in". Watch the end of the animation above
-to view the flow path.
+"action in 2" flow contains an `action` node called "nested" that invokes the
+`action in/out` node named "nested in". The first action node waits until all
+other flows and nested flows complete their sequence. Watch the end of the
+animation above to view an overlay showing the complete flow path.
 
 ## Loops
 The `action` node allows execution of `action in/out` node sequences based on
