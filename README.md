@@ -101,7 +101,7 @@ end up with "Hello Mars" in the `msg.payload`.
 
 Here we modify the node "action in" and "action 2" to execute in the reverse
 order thus changing the debug output message. Open the settings for the nodes
-and change the Priority for "action 2" to 45 and leave `action in` with Priority
+and change the Priority for "action 2" to 45 and leave "action in" with Priority
 50 (the default). Now when the `action` node is encountered, it will seek out
 the `action in/out` flows and run them in a different sequence; the lower the
 Priority number the earlier the flow order will be executed. Two flows with the
@@ -140,8 +140,11 @@ animation above to view an overlay showing the complete flow path.
 [Download the Nesting example flow here.](/actionflows/demo/nested.json)
 
 ## Loops
-The `action` node allows execution of `action in/out` node seqments based on a
+The `action` node allows execution of `action in/out` node segments based on a
 conditional loop. Use the Looping drop down combobox to select the loop type.
+
+![ActionFlow Looping](/actionflows/demo/loop2.jpg?raw=true "ActionFlow Looping")
+
 The default is "none" for no looping. In our example below, we will select the
 option "Increment from zero". This option is followed by the variable we'd like
 to use in our conditional loop. The "...from zero" ensures that the variable
@@ -152,7 +155,7 @@ initial check of the condition occurs before each iteration. In this case, we
 will check if the variable `msg.loop` is greater than 2; causing the loop to
 iterate three times (0, 1, 2).
 
-![ActionFlow Loop](/actionflows/demo/loop.png?raw=true "ActionFlow Loop")
+![ActionFlow Increment from zero](/actionflows/demo/loop.png?raw=true "ActionFlow Increment from zero")
 
 The `msg.loop` variable is accessible to our `change` node allowing us to inject
 it into a string and output the count to the debug window. When the flow is run,
@@ -164,15 +167,41 @@ and "Testing 2" before execution of the flow is stopped.
 
 [Download the Loops example flow here.](/actionflows/demo/loop.json)
 
-### None
+The Looping options can be described as follows:
 
-### Watch
+#### None
+No Looping. The `action` node will seek out any defined `action in` nodes and
+will call them sequentially, one time only.
 
-### Decrement
+#### Watch
+Watch the given variable and compare it using the set logic operator with the
+comparison variable/value; sequentially invoke each of the defined `action in`
+nodes until the set logic operator evaluates to true. Note: the variable should
+already exist prior to encountering this node. The logic condition is checked
+before the first loop iteration.
 
-### Increment
+#### Decrement
+Decrement the given variable after each loop iteration. Note: the variable should
+already exist prior to encountering this node. The logic condition is checked
+before the first loop iteration, followed by calling each defined `action in`
+flow. The decrement operation occurs after all defined `action in` flows have
+completed.
 
-### Increment From Zero
+#### Increment
+Increment the given variable after each loop iteration. Note: the variable should
+already exist prior to encountering this node. The logic condition is checked
+before the first loop iteration, followed by calling each defined `action in`
+flow. The increment operation occurs after all defined `action in` flows have
+completed.
+
+#### Increment From Zero
+When a flow initially invokes the `action` node, the given variable will be
+reset to zero. If the variable does not exist, it will be created. The logic
+condition is checked before the first loop iteration, followed by calling each
+defined `action in` flow. The increment operation occurs after all defined
+`action in` flows have completed. The looping will continue until the logic
+condition evaluates to a logical true.
+
 
 ## Libraries
 
