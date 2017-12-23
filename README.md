@@ -141,19 +141,22 @@ animation above to view an overlay showing the complete flow path.
 
 ## Loops
 The `action` node allows execution of `action in/out` node segments based on a
-conditional loop. Use the Looping drop down combobox to select the loop type.
+conditional loop. The default loop mode for an `action` node is "none" for no
+looping. Use the Looping drop down combobox to select the loop type.
 
 ![ActionFlow Looping](/actionflows/demo/loop2.jpg?raw=true "ActionFlow Looping")
 
-The default is "none" for no looping. In our example below, we will select the
-option "Increment from zero". This option is followed by the variable we'd like
-to use in our conditional loop. The "...from zero" ensures that the variable
-will be initialized to contain the numeric value 0 when the `action` node is
-first encountered in the given flow. The variable will be incremented by a
-numeric 1 each time all corresponding `action in/out` nodes have completed. An
-initial check of the condition occurs before each iteration. In this case, we
-will check if the variable `msg.loop` is greater than 2; causing the loop to
-iterate three times (0, 1, 2).
+> Note: The `action` node icon will change from a lightening bolt
+> to a circular arrow to indicate the `action` is in loop mode.
+
+In our example below, we will select the option "Increment from zero". This
+option is followed by the variable we'd like to use in our conditional loop.
+The "...from zero" ensures that the variable will be initialized to contain the
+numeric value 0 when the `action` node is first encountered in the given flow.
+The variable will be incremented by a numeric 1 each time all corresponding
+`action in/out` nodes have completed. An initial check of the condition occurs
+before each iteration. In this case, we will check if the variable `msg.loop` is
+greater than 2; causing the loop to iterate three times (0, 1, 2).
 
 ![ActionFlow Increment from zero](/actionflows/demo/loop.png?raw=true "ActionFlow Increment from zero")
 
@@ -162,12 +165,10 @@ it into a string and output the count to the debug window. When the flow is run,
 the debug window should show three separate outputs; "Testing 0", "Testing 1",
 and "Testing 2" before execution of the flow is stopped.
 
-> Note: The `action` node icon will change from a lightening bolt
-> to a circular arrow to indicate the `action` is in loop mode.
-
 [Download the Loops example flow here.](/actionflows/demo/loop.json)
 
-The Looping options can be described as follows:
+### Looping Modes
+The Looping options in the drop down combobox are defined as follows:
 
 #### None
 No Looping. The `action` node will seek out any defined `action in` nodes and
@@ -202,8 +203,55 @@ defined `action in` flow. The increment operation occurs after all defined
 `action in` flows have completed. The looping will continue until the logic
 condition evaluates to a logical true.
 
+### Until Conditional Logic Operator
+The loop mode will continue until the given conditional logic operator evaluates
+to a logical true. The Until options in the drop down combobox are defined as
+follows:
+
+#### == (equals)
+Checks if the given variable is equal to the comparison variable or value.
+
+#### != (not equals)
+Checks if the given variable is not equal to the comparison variable or value.
+
+#### < (less than)
+Checks if the given variable is less than the comparison variable or value.
+Note: the given variable and comparison variable/value should contain numeric
+values.
+
+#### <= (less than or equal to)
+Checks if the given variable is less than or equal to the comparison variable
+or value. Note: the given variable and comparison variable/value should contain
+numeric values.
+
+#### > (greater than)
+Checks if the given variable is greater than the comparison variable or value.
+Note: the given variable and comparison variable/value should contain numeric
+values.
+
+#### >= (greater than or equal to)
+Checks if the given variable is greater than or equal to the comparison variable
+or value. Note: the given variable and comparison variable/value should contain
+numeric values.
+
+#### contains
+Checks if the given variable contains the value in the comparison variable/value.
+Note: the given variable and comparison variable/value should contain string
+data.
+
+#### not contains
+Checks if the given variable does not contain the value in the comparison
+variable/value. Note: the given variable and comparison variable/value should
+contain string data.
+
 
 ## Libraries
+You can use multiple ActionFlows on tabs. However, you can also encapsulate
+functionality by placing the nodes inside a subflow. The subflow does not need
+to have any inputs or outputs. Placing an instance of the subflow on your tab
+will enable the ActionFlows. You can use the Private settings in the `action`
+node and `action in` nodes to expose functionality to other tabs and subflows or
+to limit their access and restrict functionality to the given subflow or tab.
 
 ### Private actions
 Use the private checkbox in the `action` node's settings to restrict calling any
@@ -219,75 +267,25 @@ from other tabs or subflows (where the `action` node's own private
 checkbox is unchecked.
 
 ## Advanced
-Overrides, invalidating segments at runtime, manipulating msg._af and the
-global.actionflows object.
+The nodes used in ActionFlows keep their priority, private settings, and names
+associations within the global property "actionflows" (`global.actionflows`).
+The variable contains a list of `action` nodes and their associated `action in`
+nodes within a property called `ins`, arranged by priority order.
 
-## Installation
+During runtime of an `action in/out` segment, a `msg._af` property variable is
+present that determines the calling `action` node to return to after running
+the sequential segments. In addition, any nested flows will be held within the
+`msg._asf['stack']` property. The `msg._af` property is destroyed after the
+flows exit the parent `action` node.
 
+By manipulating the ActionFlow global and `msg._af` properties, you can changed
+the runtime behavior of ActionFlows (i.e. such as override, replace, or disable
+`action in/out` flow segments).
 
-blah blah blah
-
- ,  Provides nodes to enable an extendable design pattern for flows. ActionFlows
-can streamline the appearance of flows in a similar way that Node-RED's native
-subflows work or the link nodes' "virtual wires"; invoking flow segments located
-elsewhere. Unlike link nodes or subflows, flows that use the actionflows node do
-NOT need to be aware of existing segments or have them pre-defined. Instead,
-segments are invoked by a named prefix schema; allowing an arbitrary number of
-flow segments to be added or imported later (such as when using flowman or flow
-dispatcher) without modifying the original flow. ActionFlows' segments are
-invoked sequentially with their order determined by the segment's author (see
-priority description below).
-
-## ActionFlow Segments
-Action flow segments are defined by using the `action in` and `action out` nodes.
-The in/out nodes should have a unique name but must start (have a prefix)
-with a name of an existing action node followed by a space, hyphen, or underscore.
-For instance the default name `action in` or `action_in` would be invoked when
-the `action` node is encountered. The `actionflows`, `action in`, and `action out`
-nodes can exist in any combination of multiple different tabs, inside or outside
-of subflows.
-
-Inspired by WordPress' core actions and filters API (but faster) that inarguably
-enabled one of the world's largest and most prolific plugin communities. This
-implementation leverages jump tables and indexed objects to ensure the fastest
-execution of flow segments.
-
-## Priority Description
-Like WordPress' actions & filters, actionflows allow flow segments to have a
-priority property with values of 1 to 100 (with a default of 50; a higher
-resolution than WordPress'). The priority property determines earlier or later
-execution order of a flow segment (i.e. priority 1 executes before any priority
-2s, etc). These features can make flows extendable and allows flows to furnish
-an expandable, "plugin-able" API.
-
-## Examples
-
-#### Basic Example
-
-
-![ActionFlows Basic Example](/actionflows/demo/basic.jpg?raw=true "Basic use")
-
-Description to follow...
-* Place the `action` node between nodes in a given flow to make the flow extensible.
-* Give the `action` node a unique and short name that describes the action.
-* Use the `action in` and `action out` nodes to create a flow segment.
-* Name `action in` and `action out` nodes with a prefix that matches an existing action.
-* Assign a priority to the `action in` node (1 to 100).
-
-
-#### Another Example
-Description with flow below...
-
-```
-[
-    {
-    }
-]
-```
 ## Installation
 Run the following command in your Node-RED user directory (typically ~/.node-red):
 
     npm install node-red-contrib-actionflows
 
-The actionflows' nodes are will appear in the palette under the advanced group as
+The ActionFlows' nodes will appear in the palette under the advanced group as
 the nodes `action`, `action in`, and `action out`.
