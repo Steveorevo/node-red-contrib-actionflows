@@ -54,7 +54,7 @@ If present, ActionFlows will invoke *multiple* matching prefix named nodes
 sequentially. By default, the sequence order is by creation order but can be
 changed using the `action in` node's Priority property.
 
-![ActionFlow Sequence](/actionflows/demo/basic3.png?raw=true "Sequential Flow Segments")
+![ActionFlows Sequence](/actionflows/demo/basic3.png?raw=true "Sequential Flow Segments")
 
 In the example above:
 
@@ -82,7 +82,7 @@ execution time?" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
 
-![ActionFlow Benchmarks](/actionflows/demo/bench2.png?raw=true "Debug Execution Time")
+![ActionFlows Benchmarks](/actionflows/demo/bench2.png?raw=true "Debug Execution Time")
 
 > Note: Benchmarks report how long it takes to run all matching `action in/out`
 > flows for one given iteration. Loops return to the `action` node before
@@ -97,7 +97,7 @@ the "Hello World" in `msg.payload` to eventually become "Hello Mars, and Solar
 System!". However, if we simply change the `action in/out` flow sequences, we
 end up with "Hello Mars" in the `msg.payload`.
 
-![ActionFlow Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
+![ActionFlows Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
 
 Here we modify the node "action in" and "action 2" to execute in the reverse
 order thus changing the debug output message. Open the settings for the nodes
@@ -128,7 +128,7 @@ to above 2 seconds to see the blue dot appear in the `action in/out` flow path
 and for the green dot and "running" indicator under the active `action` node.
 Please see the animated gif below.
 
-![ActionFlow Nesting](/actionflows/demo/nested.gif?raw=true "ActionFlow Nesting")
+![ActionFlows Nesting](/actionflows/demo/nested.gif?raw=true "ActionFlows Nesting")
 
 In this simple animation, the main `action` node calls two defined flows; one
 `action in/out` node called "action in" and another called "action in 2". The
@@ -144,7 +144,7 @@ The `action` node allows execution of `action in/out` node segments based on a
 conditional loop. The default loop mode for an `action` node is "none" for no
 looping. Use the Looping drop down combobox to select the loop type.
 
-![ActionFlow Looping](/actionflows/demo/loop2.jpg?raw=true "ActionFlow Looping")
+![ActionFlows Looping](/actionflows/demo/loop2.jpg?raw=true "ActionFlows Looping")
 
 > Note: The `action` node icon will change from a lightening bolt
 > to a circular arrow to indicate the `action` is in loop mode.
@@ -158,7 +158,7 @@ The variable will be incremented by a numeric 1 each time all corresponding
 before each iteration. In this case, we will check if the variable `msg.loop` is
 greater than 2; causing the loop to iterate three times (0, 1, 2).
 
-![ActionFlow Increment from zero](/actionflows/demo/loop.png?raw=true "ActionFlow Increment from zero")
+![ActionFlows Increment from zero](/actionflows/demo/loop.png?raw=true "ActionFlows Increment from zero")
 
 The `msg.loop` variable is accessible to our `change` node allowing us to inject
 it into a string and output the count to the debug window. When the flow is run,
@@ -266,6 +266,8 @@ same subflow. Uncheck to allow actions to invoke the `action in` node
 from other tabs or subflows (where the `action` node's own private
 checkbox is unchecked.
 
+![ActionFlows Private Setting](/actionflows/demo/private.png?raw=true "ActionFlows Private Setting")
+
 ## Advanced
 The nodes used in ActionFlows keep their priority, private settings, and names
 associations within the global property "actionflows" (`global.actionflows`).
@@ -278,7 +280,7 @@ the sequential segments. In addition, any nested flows will be held within the
 `msg._asf['stack']` property. The `msg._af` property is destroyed after the
 flows exit the parent `action` node.
 
-By manipulating the ActionFlow global and `msg._af` properties, you can changed
+By manipulating the ActionFlows global and `msg._af` properties, you can changed
 the runtime behavior of ActionFlows (i.e. such as override, replace, or disable
 `action in/out` flow segments).
 
