@@ -8,7 +8,7 @@ module.exports = function(RED) {
     if (typeof config._alias != 'undefined') {
       nodeID = config._alias;
     }
-    var event = "af:" + nodeID;
+    var event = "af:" + config.id;
     var handler = function(msg) {
       msg._af["noinc0"] = true; // Returning flag, do not increment from zero
       node.receive(msg);
@@ -219,7 +219,7 @@ module.exports = function(RED) {
     if (typeof config._alias != 'undefined') {
       nodeID = config._alias;
     }
-    var event = "af:" + nodeID;
+    var event = "af:" + config.id;
     var handler = function(msg) {
         node.receive(msg);
     }
