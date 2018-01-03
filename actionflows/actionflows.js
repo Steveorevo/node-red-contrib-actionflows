@@ -1,5 +1,4 @@
 module.exports = function(RED) {
-  var S = require('string');
   RED.nodes.registerType("actionflows", actionflows);
   function actionflows(config) {
     RED.nodes.createNode(this, config);
@@ -9,6 +8,27 @@ module.exports = function(RED) {
     // Gather all `action in`
     var RED2 = require.main.require('node-red');
     var flows = RED2.nodes.getFlows().flows;
+
+    // Get disabled tabs
+    var tabs = [];
+    flows.forEach(function(f) {
+      if (typeof f.disabled != "undefined") {
+        if (f.disabled) {
+          tabs.push(f.id);
+        }
+      }
+    });
+
+    // Remove nodes on disabled tab from our flows
+    var enabled = [];
+    flows.forEach(function(f) {
+      if (typeof f.z != "undefined") {
+        if (tabs.indexOf(f.z) == -1) {
+          enabled.push(f);
+        }
+      }
+    });
+    flows = enabled;
 
     var ai = [];
     flows.forEach(function(f) {
