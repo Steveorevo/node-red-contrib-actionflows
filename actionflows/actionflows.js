@@ -125,8 +125,9 @@ module.exports = function(RED) {
 
     // Util functions
     function prefixMatch(s) {
-      s = S(s).replaceAll("_", " ").replaceAll("-", " ").replaceAll(".", " ");
-      return s.toString();
+      return s.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+              .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+              .replace(new RegExp("\\.", 'g'), " "); // support domain format
     }
     function getByID(id) {
       for (var i = 0; i < flows.length; i++) {
@@ -165,24 +166,24 @@ module.exports = function(RED) {
           msg._af["stack"] = [];
         }
 
-        if (typeof msg._af[nodeID] == "undefined") {
-          msg._af[nodeID] = {
+        if (typeof msg._af[config.id] == "undefined") {
+          msg._af[config.id] = {
             execTime: process.hrtime(),
-            ins: af[nodeID].ins,
+            ins: af[config.id].ins,
             index: 0
           };
           node.status({fill:"green",shape:"dot",text: "running" });
         }
-        if (msg._af[nodeID].index < msg._af[nodeID].ins.length) {
+        if (msg._af[config.id].index < msg._af[config.id].ins.length) {
           msg._af["stack"].push(event);
-          msg._af[nodeID].index++;
-          RED.events.emit("af:" + msg._af[nodeID].ins[msg._af[nodeID].index - 1].id, msg);
+          msg._af[config.id].index++;
+          RED.events.emit("af:" + msg._af[config.id].ins[msg._af[config.id].index - 1].id, msg);
         }else{
           if (config.perf) {
-            var t = process.hrtime(msg._af[nodeID].execTime);
+            var t = process.hrtime(msg._af[config.id].execTime);
             node.warn("Action cycle execution time: " + t[0] + "s and " + t[1]/1000000 + "ms");
           }
-          delete msg._af[nodeID];
+          delete msg._af[config.id];
 
           // Bump loop and restart action
           if (config.loop != "none") {
@@ -349,10 +350,10 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var node = this;
     var nodeID = config.id;
-    if (typeof config._alias != 'undefined') {
+    if (typeof config._alias != "undefined") {
       nodeID = config._alias;
     }
-    var event = "af:" + config.id;
+    var event = "af:" + nodeID;
     var handler = function(msg) {
         node.receive(msg);
     }
@@ -369,53 +370,9 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var node = this;
     this.on('input', function(msg) {
-      RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
-		});
-  }
-
-  /**
-   * getActionFlows returns all actionflows nodes
-   */
-  function getActionFlows() {
-    var RED2 = require.main.require('node-red');
-    var flows = RED2.nodes.getFlows().flows;
-    var actionflows = [];
-    var ins = [];
-    flows.forEach(function(f) {
-      if (f.type.substring(0, 11) == 'actionflows') {
-        if (f.type == 'actionflows') {
-          actionflows.push(f);
-        }
-        if (f.type == 'actionflows_in') {
-          ins.push(f);
-        }
+      if (typeof msg._af != "undefined") {
+        RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
       }
-    });
-    // Sort actionflows_in by priority
-    ins.sort(function(a, b) {
-      return parseInt(a.priority)-parseInt(b.priority);
-    });
-    var af = {};
-
-    // Associate actionflows with ins
-    actionflows.forEach(function(a) {
-      a.ins = [];
-      ins.forEach(function(i) {
-
-        // Enforce private settings
-        if ((a.private == false && i.private == false) ||
-            (a.private == true && a.z == i.z) ||
-            (i.private == true && a.z == i.z)) {
-              if (i.name.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
-                        .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
-                        .replace(new RegExp("\\.", 'g'), " ") // support domain format
-                        .startsWith(a.name + " ")) {
-                a.ins.push(i);
-              }
-        }
-      });
-      af[a.id] = a;
-    });
-    return af;
+		});
   }
 }
