@@ -154,45 +154,6 @@
     oneditprepare: function() {
       var node = this;
       $("#node-input-priority").spinner({min:1,max:100});
-
-      $("input#node-input-name").change(function(){
-        calcActionIns();
-      });
-      $("input#node-input-private").change(function(){
-        calcActionIns();
-      });
-      var node = this;
-      function calcActionIns() {
-        var afin = RED.nodes.filterNodes({type:"actionflows"});
-        var priv = $("input#node-input-private").is(':checked');
-        var acts = [];
-        // Calc action ins
-        afin.forEach(function(a) {
-          if ((priv == false && a.private == false) ||
-              (priv == true && node.z == a.z) ||
-              (a.private == true && node.z == a.z)) {
-                var aname = $("input#node-input-name").val();
-                aname = aname.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
-                     .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
-                     .replace(new RegExp("\\.", 'g'), " ") // support domain format
-                if (getLeftMost(aname, " ") == a.name) {
-                  acts.push(a);
-                }
-          }
-        });
-        $("#action-dialog-action-count").text("There are " + acts.length.toString() + " calling actions matching this flow.");
-      }
-      function getLeftMost(sSub, sFind){
-        for (var i = 0; i < sSub.length; i = i + 1) {
-          var f = sSub.indexOf(sFind, i);
-          if (f != -1) {
-             return sSub.substr(0, f);
-             break;
-          }
-        }
-        return sSub;
-      };
-      calcActionIns();
     }
 	});
 </script>
@@ -289,9 +250,6 @@
         <label for="node-input-private" style="width: 70%;">
           <span>Private flow; limit access to this tab or subflow.</span>
         </label>
-    </div>
-    <div class="form-row form-tips" id="action-dialog-action-count">
-      There are 0 calling actions matching this flow.
     </div>
 </script>
 <script type="text/x-red" data-template-name="actionflows_out">
