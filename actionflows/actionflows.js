@@ -4,32 +4,7 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var nodeID = config.id;
     var node = this;
-
-    // Gather all `action in`
-    var RED2 = require.main.require('node-red');
-    var flows = RED2.nodes.getFlows().flows;
-
-    // Get disabled tabs
-    var tabs = [];
-    flows.forEach(function(f) {
-      if (typeof f.disabled != "undefined") {
-        if (f.disabled) {
-          tabs.push(f.id);
-        }
-      }
-    });
-
-    // Remove nodes on disabled tab from our flows
-    var enabled = [];
-    flows.forEach(function(f) {
-      if (typeof f.z != "undefined") {
-        if (tabs.indexOf(f.z) == -1) {
-          enabled.push(f);
-        }
-      }
-    });
-    flows = enabled;
-
+    var flows = getEnabledFlows();
     var ai = [];
     flows.forEach(function(f) {
       if (f.type == 'actionflows_in') {
@@ -107,6 +82,7 @@ module.exports = function(RED) {
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
       af = new Object();
+      af.invoke = invokeActionIn;
     }
     if (typeof af[config.id] == "undefined") {
       af[config.id] = config;
@@ -123,12 +99,6 @@ module.exports = function(RED) {
     }
     node.context().global.set('actionflows', af);
 
-    // Util functions
-    function prefixMatch(s) {
-      return s.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
-              .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
-              .replace(new RegExp("\\.", 'g'), " "); // support domain format
-    }
     function getByID(id) {
       for (var i = 0; i < flows.length; i++) {
         var f = flows[i];
@@ -139,7 +109,6 @@ module.exports = function(RED) {
       }
       return null;
     }
-
     var event = "af:" + config.id;
     var handler = function(msg) {
       if (typeof msg._af != "undefined") {
@@ -353,6 +322,15 @@ module.exports = function(RED) {
     if (typeof config._alias != "undefined") {
       nodeID = config._alias;
     }
+
+    // Ensure invoke is avail. even if no actionflows
+    var af = node.context().global.get('actionflows');
+    if (typeof af == "undefined") {
+      af = new Object();
+      af.invoke = invokeActionIn;
+      node.context().global.set('actionflows', af);
+    }
+
     var event = "af:" + nodeID;
     var handler = function(msg) {
         node.receive(msg);
@@ -374,5 +352,82 @@ module.exports = function(RED) {
         RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
       }
 		});
+  }
+  function getEnabledFlows() {
+    // Gather all enabled flows
+    var RED2 = require.main.require('node-red');
+    var flows = RED2.nodes.getFlows().flows;
+
+    // Get disabled tabs
+    var tabs = [];
+    flows.forEach(function(f) {
+      if (typeof f.disabled != "undefined") {
+        if (f.disabled) {
+          tabs.push(f.id);
+        }
+      }
+    });
+
+    // Remove nodes on disabled tab from our flows
+    var enabled = [];
+    flows.forEach(function(f) {
+      if (typeof f.z != "undefined") {
+        if (tabs.indexOf(f.z) == -1) {
+          enabled.push(f);
+        }
+      }
+    });
+    return enabled;
+  }
+  function invokeActionIn(sName, msg) {
+    // Invoke all matching `action in` by given name that aren't private
+    var RED2 = require.main.require('node-red');
+    var flows = getEnabledFlows();
+    var ins = [];
+    flows.forEach(function(f) { // already purged disabled
+      if (prefixMatch(f.name).startsWith(prefixMatch(sName)) && f.type == 'actionflows_in') {
+        if (f.private == false) {
+          ins.push(f);
+        }
+      }
+    });
+
+    // Sort all `action in` by priority
+    ins.sort(function(a, b) {
+      return parseInt(a.priority)-parseInt(b.priority);
+    });
+    if (typeof msg._af == 'undefined') {
+      msg._af = {};
+      msg._af["stack"] = [];
+    }
+    var done;
+    var event = "af:" + RED2.util.generateId();
+    var handler = function(msg) {
+      if (ins.length > 0) {
+        msg._af["stack"].push(event);
+        RED.events.emit("af:" + ins.shift().id, msg);
+      }else{
+        RED.events.removeListener(event, handler);
+        if (msg._af["stack"].length == 0) {
+          delete msg._af;
+        }
+        done(msg);
+      }
+    }
+    RED.events.on(event, handler);
+    var p = new Promise(function(resolve) {
+      done = resolve;
+    });
+    if (ins.length > 0) {
+      var id = ins.shift().id;
+      msg._af["stack"].push(event);
+      RED.events.emit("af:" + id, msg);
+    }
+    return p;
+  }
+  function prefixMatch(s) {
+    return s.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+            .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+            .replace(new RegExp("\\.", 'g'), " "); // support domain format
   }
 }
