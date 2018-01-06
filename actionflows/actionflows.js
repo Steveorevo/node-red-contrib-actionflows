@@ -4,110 +4,8 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
     var nodeID = config.id;
     var node = this;
-    var flows = getEnabledFlows();
-    var ai = [];
-    flows.forEach(function(f) {
-      if (f.type == 'actionflows_in') {
-        ai.push(f);
-      }
-    });
-
-    // Find all `action in` related by this actionflows' name
-    var ins = [];
-
-    // Identify instance
-    var instance = config.name;
-    var subflow = getByID(config.z);
-    if (subflow != null) {
-      if (typeof subflow.name != "undefined") {
-        instance = subflow.name + " " + config.name;
-      }
-    }
-
-    ai.forEach(function(f) {
-      // Look for any `action in` on this level
-      if (typeof config._alias == "undefined") {
-
-        // Any tab, as long as we're not in a subflow
-        if (prefixMatch(f.name).startsWith(prefixMatch(config.name))) {
-          ins.push(f);
-        }
-      }else{
-
-        // Restrict to this tab
-        if (f.z == config.z && prefixMatch(f.name).startsWith(prefixMatch(config.name))) {
-          ins.push(f);
-        }
-      }
-    });
-    ai.forEach(function(f) {
-      // Look for any `action in` within the subflow instance
-      var alias = getByID(config._alias);
-      if (alias != null) {
-        if (f.z == alias.z && prefixMatch(f.name).startsWith(prefixMatch(alias.name))) {
-          ins.push(f);
-        }
-      }
-    });
-    ai.forEach(function(f) {
-      // Look for any `action in` on first namespace'd (subflow) level
-      if (subflow != null) {
-        if (f.z == subflow.z && prefixMatch(f.name).startsWith(prefixMatch(subflow.name + " " + config.name))) {
-          ins.push(f);
-        }
-      }
-    });
-
-    // Sort all `action in` by priority
-    ins.sort(function(a, b) {
-      return parseInt(a.priority)-parseInt(b.priority);
-    });
-
-    // Enforce private settings
-    var zz = config.z;
     if (typeof config._alias != "undefined") {
-      zz = getByID(config._alias).z;
-    }
-    var pins = [];
-    ins.forEach(function(i) {
-      if ((i.private == false && config.private == false) ||
-          (config.private == true && i.z == zz) ||
-          (i.private == true && i.z == zz)) {
-            pins.push(i);
-      }
-    });
-    ins = pins;
-
-    // Associate all `action in` with their actionflows
-    var af = node.context().global.get('actionflows');
-    if (typeof af == "undefined") {
-      af = new Object();
-      af.invoke = invokeActionIn;
-    }
-    if (typeof af[config.id] == "undefined") {
-      af[config.id] = config;
-    }
-    var seconds = new Date().getTime() / 1000;
-    af[config.id].age = seconds;
-    af[config.id].ins = ins;
-
-    // Purge old actionflows not deployed within the last 10 seconds
-    for(var id in af) {
-      if ((seconds - af[id].age) > 10) {
-        delete af[id];
-      }
-    }
-    node.context().global.set('actionflows', af);
-
-    function getByID(id) {
-      for (var i = 0; i < flows.length; i++) {
-        var f = flows[i];
-        if (f.id == id) {
-          return f;
-          break;
-        }
-      }
-      return null;
+      nodeID = config._alias;
     }
     var event = "af:" + config.id;
     var handler = function(msg) {
@@ -117,7 +15,21 @@ module.exports = function(RED) {
       }
     }
     RED.events.on(event, handler);
+
     this.on("input", function(msg) {
+        // Check no matching `action in`s defined
+        var af = node.context().global.get('actionflows');
+        if (typeof af == "undefined") {
+          node.status({});
+          node.send(msg);
+          return;
+        }else{
+          if (typeof af[nodeID] == "undefined") {
+            node.status({});
+            node.send(msg);
+            return;
+          }
+        }
 
         // Check loop conditional
         if (stopLoop()) {
@@ -129,30 +41,28 @@ module.exports = function(RED) {
           node.send(msg);
           return;
         }
-        var af = node.context().global.get('actionflows');
-        if (typeof msg._af == 'undefined') {
+        if (typeof msg._af == "undefined") {
           msg._af = {};
           msg._af["stack"] = [];
         }
-
-        if (typeof msg._af[config.id] == "undefined") {
-          msg._af[config.id] = {
+        if (typeof msg._af[nodeID] == "undefined") {
+          msg._af[nodeID] = {
             execTime: process.hrtime(),
-            ins: af[config.id].ins,
+            ins: af[nodeID].ins,
             index: 0
           };
           node.status({fill:"green",shape:"dot",text: "running" });
         }
-        if (msg._af[config.id].index < msg._af[config.id].ins.length) {
+        if (msg._af[nodeID].index < msg._af[nodeID].ins.length) {
           msg._af["stack"].push(event);
-          msg._af[config.id].index++;
-          RED.events.emit("af:" + msg._af[config.id].ins[msg._af[config.id].index - 1].id, msg);
+          msg._af[nodeID].index++;
+          RED.events.emit("af:" + msg._af[nodeID].ins[msg._af[nodeID].index - 1].id, msg);
         }else{
           if (config.perf) {
-            var t = process.hrtime(msg._af[config.id].execTime);
+            var t = process.hrtime(msg._af[nodeID].execTime);
             node.warn("Action cycle execution time: " + t[0] + "s and " + t[1]/1000000 + "ms");
           }
-          delete msg._af[config.id];
+          delete msg._af[nodeID];
 
           // Bump loop and restart action
           if (config.loop != "none") {
@@ -317,21 +227,12 @@ module.exports = function(RED) {
   RED.nodes.registerType("actionflows_in", actionflows_in);
   function actionflows_in(config) {
     RED.nodes.createNode(this, config);
-    var node = this;
     var nodeID = config.id;
+    var node = this;
     if (typeof config._alias != "undefined") {
       nodeID = config._alias;
     }
-
-    // Ensure invoke is avail. even if no actionflows
-    var af = node.context().global.get('actionflows');
-    if (typeof af == "undefined") {
-      af = new Object();
-      af.invoke = invokeActionIn;
-      node.context().global.set('actionflows', af);
-    }
-
-    var event = "af:" + nodeID;
+    var event = "af:" + config.id;
     var handler = function(msg) {
         node.receive(msg);
     }
@@ -342,6 +243,233 @@ module.exports = function(RED) {
     this.on("close",function() {
         RED.events.removeListener(event, handler);
     });
+
+    // Build actionflows associations
+    var RED2 = require.main.require('node-red');
+    var flows = RED2.nodes.getFlows().flows;
+    flows = JSON.parse(JSON.stringify(flows)); // deep clone
+
+    // Purge items from disabled tabs
+    var disabledTabs = [];
+    flows.forEach(function(f) {
+      if (f.type == "tab") {
+        if (f.disabled) {
+          disabledTabs.push(f.id);
+        }
+      }
+    });
+    var purged = [];
+    flows.forEach(function(f) {
+      if (typeof f.z != "undefined") {
+        if (disabledTabs.indexOf(f.z) == -1) {
+          purged.push(f);
+        }
+      }else{
+        purged.push(f);
+      }
+    });
+    flows = purged;
+
+    // Ensure Subflows have a default name
+    for (var i = 0; i < flows.length; i++) {
+      if (flows[i].type.startsWith("subflow:")) {
+        if (typeof flows[i].name == "undefined" || flows[i].name == "") {
+          var id = flows[i].type.substr(8);
+          flows[i].name = getByID(id).name;
+        }
+      }
+    }
+
+    // Purge old actionflows not deployed within the last few seconds
+    var af = node.context().global.get('actionflows');
+    if (typeof af == "undefined") {
+      af = new Object();
+    }
+    var seconds = new Date().getTime() / 1000;
+    for(var id in af) {
+      if ((seconds - af[id].age) > 2) {
+        delete af[id];
+      }
+    }
+
+    // Furnish invoke function to JavaScript authors
+    af.invoke = function(sName, msg) {
+      var ins = [];
+      flows.forEach(function(f) {
+        if (f.type == "actionflows_in" && f.name == sName) {
+          if (getTabID(f) != false) {
+            ins.push(f);
+          }
+        }
+      });
+
+      // Sort ins by priority
+      ins.sort(function(a, b) {
+        return parseInt(a.priority)-parseInt(b.priority);
+      });
+      if (typeof msg._af == 'undefined') {
+        msg._af = {};
+        msg._af["stack"] = [];
+      }
+      var done;
+      var event = "af:" + RED2.util.generateId();
+      var handler = function(msg) {
+        if (ins.length > 0) {
+          msg._af["stack"].push(event);
+          RED.events.emit("af:" + ins.shift().id, msg);
+        }else{
+          RED.events.removeListener(event, handler);
+          if (msg._af["stack"].length == 0) {
+            delete msg._af;
+          }
+          done(msg);
+        }
+      }
+      RED.events.on(event, handler);
+      var p = new Promise(function(resolve) {
+        done = resolve;
+      });
+      if (ins.length > 0) {
+        var id = ins.shift().id;
+        msg._af["stack"].push(event);
+        RED.events.emit("af:" + id, msg);
+      }else{
+        RED.events.removeListener(event, handler);
+        delete msg._af;
+        done(msg);
+      }
+      return p;
+    };
+
+    // Look for any actionflows on the same plane
+    var item = getByID(nodeID);
+    flows.forEach(function(f) {
+      if (config.private) {
+        if (f.z == item.z && f.type == "actionflows" && prefixMatch(config.name + " ").startsWith(f.name + " ")) {
+          //node.warn(nameToID(nodeID + " " + f.id));
+          associateActionFlows(f, config);
+        }
+
+        // Look for any subflows on the same plane
+        if (f.z == item.z && f.type.startsWith("subflow:") && prefixMatch(config.name + " ").startsWith(f.name + " ")) {
+          var name = config.name.substr(f.name.length + 1);
+          // Look inside subflows for actionflows
+          flows.forEach(function(a) {
+            if (a.z == f.type.substr(8) && a.type == "actionflows" && prefixMatch(name + " ").startsWith(a.name + " ")) {
+              //node.warn(nameToID(nodeID + " " + a.id));
+              associateActionFlows(a, config);
+            }
+          });
+        }
+      }else{
+        if (f.type == "actionflows" && prefixMatch(config.name + " ").startsWith(f.name + " ")) {
+          if (getTabID(f) != false) {
+            //node.warn(nameToID(nodeID + " " + f.id));
+            associateActionFlows(f, config);
+          }
+        }
+      }
+    });
+    node.context().global.set('actionflows', af);
+
+    // Record `action` to `action in` associations
+    function associateActionFlows(aa, ai) {
+      if (typeof af[aa.id] == "undefined") {
+        af[aa.id] = aa;
+      }
+      if (typeof af[aa.id].ins == "undefined") {
+        af[aa.id].ins = [];
+      }
+      af[aa.id].age = new Date().getTime() / 1000;
+      af[aa.id].ins.push(ai);
+
+      // Sort ins by priority
+      af[aa.id].ins.sort(function(a, b) {
+        return parseInt(a.priority)-parseInt(b.priority);
+      });
+    }
+
+    // Support namespace dividers with space, period, underscore or dash
+    function prefixMatch(s) {
+      return s.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
+              .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
+              .replace(new RegExp("\\.", 'g'), " "); // support domain format
+    }
+
+    // Find the tab id the given item lives on or false.
+    function getTabID(item) {
+      var RED2 = require.main.require('node-red');
+      var flows = RED2.nodes.getFlows().flows;
+
+      // Get enabled tabs
+      var result = false;
+      var tabIDs = [];
+      flows.forEach(function(f) {
+        if (f.type == "tab") {
+          if (f.disabled == false) {
+            tabIDs.push(f.id);
+          }
+        }
+      });
+      if (tabIDs.indexOf(item.z) != -1) {
+        result = item.z;
+      }else{
+        if (typeof item._alias != "undefined") {
+          for (var a = 0; a < flows.length; a++) {
+            if (flows[a].id == item._alias) {
+              item = flows[a];
+              result = item.id;
+              break;
+            }
+          }
+        }
+        for (var i = 0; i < flows.length; i++) {
+          if (flows[i].type == ("subflow:" + item.z)) {
+            if (result != false) {
+              result = getTabID(flows[i]);
+            }else{
+              result = getTabID(flows[i]);
+            }
+            break;
+          }
+        }
+      }
+      return result;
+    }
+
+    // Debug function to reveal id name
+    function nameToID(sPath) {
+      var RED2 = require.main.require('node-red');
+      var flows = RED2.nodes.getFlows().flows;
+      flows.forEach(function(f) {
+        var name = f.name;
+        if (typeof name == "undefined" || name == "") {
+          name = f.label;
+        }
+        if (typeof name == "undefined" || name == "") {
+          flows.forEach(function(s) {
+            if (s.id == f.type.substr(8)) {
+              name = s.name;
+            }
+          });
+        }
+        sPath = sPath.replace(new RegExp(f.id, 'g'), name);
+      });
+      return sPath;
+    }
+
+    // Return the item by id
+    function getByID(id) {
+      for (var i = 0; i < flows.length; i++) {
+        var f = flows[i];
+        if (f.id == id) {
+          return f;
+          break;
+        }
+      }
+      return null;
+    }
+    //node.warn(af);
   }
   RED.nodes.registerType("actionflows_out", actionflows_out);
   function actionflows_out(config) {
@@ -352,82 +480,5 @@ module.exports = function(RED) {
         RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
       }
 		});
-  }
-  function getEnabledFlows() {
-    // Gather all enabled flows
-    var RED2 = require.main.require('node-red');
-    var flows = RED2.nodes.getFlows().flows;
-
-    // Get disabled tabs
-    var tabs = [];
-    flows.forEach(function(f) {
-      if (typeof f.disabled != "undefined") {
-        if (f.disabled) {
-          tabs.push(f.id);
-        }
-      }
-    });
-
-    // Remove nodes on disabled tab from our flows
-    var enabled = [];
-    flows.forEach(function(f) {
-      if (typeof f.z != "undefined") {
-        if (tabs.indexOf(f.z) == -1) {
-          enabled.push(f);
-        }
-      }
-    });
-    return enabled;
-  }
-  function invokeActionIn(sName, msg) {
-    // Invoke all matching `action in` by given name that aren't private
-    var RED2 = require.main.require('node-red');
-    var flows = getEnabledFlows();
-    var ins = [];
-    flows.forEach(function(f) { // already purged disabled
-      if (prefixMatch(f.name).startsWith(prefixMatch(sName)) && f.type == 'actionflows_in') {
-        if (f.private == false) {
-          ins.push(f);
-        }
-      }
-    });
-
-    // Sort all `action in` by priority
-    ins.sort(function(a, b) {
-      return parseInt(a.priority)-parseInt(b.priority);
-    });
-    if (typeof msg._af == 'undefined') {
-      msg._af = {};
-      msg._af["stack"] = [];
-    }
-    var done;
-    var event = "af:" + RED2.util.generateId();
-    var handler = function(msg) {
-      if (ins.length > 0) {
-        msg._af["stack"].push(event);
-        RED.events.emit("af:" + ins.shift().id, msg);
-      }else{
-        RED.events.removeListener(event, handler);
-        if (msg._af["stack"].length == 0) {
-          delete msg._af;
-        }
-        done(msg);
-      }
-    }
-    RED.events.on(event, handler);
-    var p = new Promise(function(resolve) {
-      done = resolve;
-    });
-    if (ins.length > 0) {
-      var id = ins.shift().id;
-      msg._af["stack"].push(event);
-      RED.events.emit("af:" + id, msg);
-    }
-    return p;
-  }
-  function prefixMatch(s) {
-    return s.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
-            .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
-            .replace(new RegExp("\\.", 'g'), " "); // support domain format
   }
 }
