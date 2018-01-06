@@ -43,6 +43,16 @@ module.exports = function(RED) {
         }
         if (typeof msg._af == "undefined") {
           msg._af = {};
+
+          // Get parent, ensure instance name; used by invoke JavaScripters
+          var parent = getByID(config.z);
+          if (parent.type == "tab") {
+            parent.name = parent.label;
+          }
+          if (typeof parent.name == "undefined" || parent.name == "") {
+            parent.name = getByID(parent.type.substr(8)).name;
+          }
+          msg._af["parent"] = parent;
           msg._af["stack"] = [];
         }
         if (typeof msg._af[nodeID] == "undefined") {
@@ -458,18 +468,20 @@ module.exports = function(RED) {
       return sPath;
     }
 
-    // Return the item by id
-    function getByID(id) {
-      for (var i = 0; i < flows.length; i++) {
-        var f = flows[i];
-        if (f.id == id) {
-          return f;
-          break;
-        }
-      }
-      return null;
-    }
     //node.warn(af);
+  }
+  // Return the item by id
+  function getByID(id) {
+    var RED2 = require.main.require('node-red');
+    var flows = RED2.nodes.getFlows().flows;
+    for (var i = 0; i < flows.length; i++) {
+      var f = flows[i];
+      if (f.id == id) {
+        return f;
+        break;
+      }
+    }
+    return null;
   }
   RED.nodes.registerType("actionflows_out", actionflows_out);
   function actionflows_out(config) {
