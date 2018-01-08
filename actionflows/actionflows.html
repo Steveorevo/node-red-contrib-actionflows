@@ -11,23 +11,40 @@
       untilprop: {value: 0},
       until: {value: "gt"},
       loop: {value: "none"},
-      perf: {value: false}
+      perf: {value: false},
+      private: {value: false}
 		},
 		inputs:1,
 		outputs:1,
     icon: function() {
       if (this.loop == 'none' || typeof this.loop == 'undefined') {
-        return "actionflows.png";
+        if (this.private) {
+          return "actionflows-locked.png";
+        }else{
+          return "actionflows.png";
+        }
       }else{
-        return "loopflow.png";
+        if (this.private) {
+          return "loopflow-locked.png";
+        }else{
+          return "loopflow.png";
+        }
       }
     },
     paletteLabel: "action",
 		label: function() {
       if (this.loop == 'none') {
-        this._def.icon = "actionflows.png";
+        if (this.private) {
+          this._def.icon = "actionflows-locked.png";
+        }else{
+          this._def.icon = "actionflows.png";
+        }
       }else{
-        this._def.icon = "loopflow.png";
+        if (this.private) {
+          this._def.icon = "loopflow-locked.png";
+        }else{
+          this._def.icon = "loopflow.png";
+        }
       }
 			return this.name||"action";
 		},
@@ -35,7 +52,7 @@
       return this.name?"node_label_italic":"";
     },
     info: function() {
-        return (this.name?"# " + this.name + "\n":"") + (this.info||"");
+        return (this.name?"# "+this.name+"\n":"")+(this.info||"");
     },
     oneditprepare: function() {
       this.editor = RED.editor.createEditor({
@@ -78,7 +95,6 @@
       var node = this;
       function calcActionIns() {
         var afin = RED.nodes.filterNodes({type:"actionflows_in"});
-        console.log(afin);
         var priv = $("input#node-input-private").is(':checked');
         var ins = [];
         // Calc action ins
@@ -206,6 +222,12 @@
     </div>
     <div class="form-row form-tips" id="action-dialog-flow-count">
       There are 0 invokable flows matching this action.
+    </div>
+    <div class="form-row" id="node-action-private">
+        <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-private" style="width: 70%;">
+          <span>Private action; limit to flows on this tab or subflow.</span>
+        </label>
     </div>
     <div class="form-row" id="node-action-perf">
         <input type="checkbox" id="node-input-perf" style="display: inline-block; width: auto; vertical-align: top;">
