@@ -3,6 +3,10 @@ module.exports = function(RED) {
   function actionflows(config) {
     var node = this;
 
+    // var RED2 = require.main.require('node-red');
+    // var flows = RED2.nodes.getFlows().flows;
+    // node.warn(flows);
+    //
     // Create our node and event handler
     RED.nodes.createNode(this, config);
     var event = "af:" + config.id;
@@ -26,6 +30,11 @@ module.exports = function(RED) {
         // Check no matching `action in`s, just move along
         var af = node.context().global.get('actionflows');
         if (typeof af == "undefined") {
+          node.status({});
+          node.send(msg);
+          return;
+        }
+        if (typeof af[config.id] == "undefined") {
           node.status({});
           node.send(msg);
           return;
@@ -255,7 +264,6 @@ module.exports = function(RED) {
 
   // Gather all live instances of actionflows and subflows
   function assembleFlows(item, node) {
-
     // Add the given node to our internal list of subflows and actionflows
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
@@ -263,7 +271,7 @@ module.exports = function(RED) {
     }
     af[item.id] = JSON.parse(JSON.stringify(item)); // deep clone;
     var seconds = new Date().getTime() / 1000;
-    af[item.id].age = seconds;
+    af[item.id].age = seconds;;
 
     // Add our list of subflow instances
     var RED2 = require.main.require('node-red');
@@ -274,7 +282,8 @@ module.exports = function(RED) {
 
         // Ensure subflow instance has a default name
         if (typeof n.name == "undefined" || n.name == "") {
-          n.name = getByID(n.type.substr(8)).name;
+          var s = getByID(n.type.substr(8));
+          n.name = s.name;
         }
         n.age = seconds;
         af[n.id] = n;
@@ -283,12 +292,12 @@ module.exports = function(RED) {
 
     // Identify the tabs each node lives on
     for (var id in af) {
-      af[id].tab = getTabID(af[id]);
+      af[id].tab = getTab(af[id]);
     }
 
     // Filter out disabled, non-existent (in a subflow but not on a tab)
     for (var id in af) {
-      if (af[id].tab == false) {
+      if (af[id].tab === false) {
         delete af[id];
       }
     }
@@ -354,7 +363,7 @@ module.exports = function(RED) {
     });
 
     // Furnish invoke function for JavaScript authors
-    af.invoke = function(sName, msg) {
+    node.context().global.set('afInvoke', function(sName, msg) {
       var ins = [];
       for (var id in af) {
         if (af[id].type == "actionflows_in" && af[id].name == sName) {
@@ -399,8 +408,7 @@ module.exports = function(RED) {
         done(msg);
       }
       return p;
-    };
-
+    });
     node.context().global.set('actionflows', af);
   }
   // Support dividers; dot, dash, space, underscore
@@ -409,57 +417,41 @@ module.exports = function(RED) {
             .replace(new RegExp("-", 'g'), " ")
             .replace(new RegExp("\\.", 'g'), " ") + " ";
   }
-  // Find the enabled tab id where the given item exists or false.
-  function getTabID(item) {
-    var RED2 = require.main.require('node-red');
-    var flows = RED2.nodes.getFlows().flows;
-
-    // Get enabled tabs only
-    var result = false;
-    var tabIDs = [];
-    flows.forEach(function(f) {
-      if (f.type == "tab") {
-        if (f.disabled == false) {
-          tabIDs.push(f.id);
-        }
-      }
-    });
-    if (tabIDs.indexOf(item.z) != -1) {
-      result = item.z;
+  // Find the enabled tab where the given item exists or false.
+  function getTab(item) {
+    if (item.type == "tab") {
+      return item;
+    }
+    if (item.type.startsWith("subflows:")) {
+      item = getByID(item.type.substr(8));
     }else{
-      if (typeof item._alias != "undefined") {
-        for (var a = 0; a < flows.length; a++) {
-          if (flows[a].id == item._alias) {
-            item = flows[a];
-            result = item.id;
-            break;
-          }
-        }
-      }
-      for (var i = 0; i < flows.length; i++) {
-        if (flows[i].type == ("subflow:" + item.z)) {
-          if (result != false) {
-            result = getTabID(flows[i]);
-          }else{
-            result = getTabID(flows[i]);
-          }
-          break;
-        }
+      if (item.type == "subflow") {
+        return false;
       }
     }
-    return result;
+    item = getByID(item.z);
+    if (item != false) {
+      return getTab(item);
+    }else{
+      return item;
+    }
   }
-  // Return the node by id
+  // Return the node by id of null if not found
   function getByID(id) {
     var RED2 = require.main.require('node-red');
     var flows = RED2.nodes.getFlows().flows;
+    var result = false;
     for (var i = 0; i < flows.length; i++) {
       var f = flows[i];
       if (f.id == id) {
-        return f;
+        result = f;
         break;
       }
     }
-    return null;
+    // Try our global list?
+    if (result == null) {
+      console.log("Warning: getByID is returning null for " + id);
+    }
+    return result;
   }
 }
