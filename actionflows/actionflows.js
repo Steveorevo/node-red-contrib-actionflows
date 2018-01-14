@@ -317,7 +317,11 @@ module.exports = function(RED) {
       if (msg._af[config.id].index < msg._af[config.id].ins.length) {
         msg._af.stack.push(event);
         msg._af[config.id].index++;
-        RED.events.emit("af:" + msg._af[config.id].ins[msg._af[config.id].index - 1].id, msg);
+        var ain = msg._af[config.id].ins[msg._af[config.id].index - 1];
+        if (config.seq) {
+          node.warn("`" + config.name + "` (" + config.id + ") -> `" + ain.name + "` (" + ain.id + ")");
+        }
+        RED.events.emit("af:" + ain.id, msg);
       }else{
         if (config.perf) {
           var t = process.hrtime(msg._af[config.id].execTime);
