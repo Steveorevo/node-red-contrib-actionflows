@@ -43,24 +43,15 @@ module.exports = function(RED) {
       var RED2 = require.main.require('node-red');
       var flows = RED2.nodes.getFlows().flows;
       var actionflows = getActionflows();
+      var ins_object = new Object();
       var actions = new Object();
-      var ins_array = [];
       for (var id in actionflows) {
-        if (actionflows[id].type == "actionflows") {
-          actions[id] = actionflows[id];
+        if (actionflows[id].type == "actionflows_in") {
+          ins_object[id] = actionflows[id];
         }else{
-          ins_array.push(actionflows[id]);
+          actions[id] = actionflows[id];
         }
       }
-      // Sort ins by priority
-      ins_array.sort(function(a, b) {
-        return parseInt(a.priority)-parseInt(b.priority);
-      });
-      // Convert sorted ins to object
-      var ins_object = new Object();
-      ins_array.forEach(function(i) {
-        ins_object[i.id] = i;
-      });
       // Build associations between actions and their matching ins
       for (var id in actions) {
         var a = actions[id];
@@ -87,17 +78,18 @@ module.exports = function(RED) {
             }
           }
         }
-        // Match any protected actionflows
+        // Match protected actionflows to explicitly named ins
         if (a.scope == "protected") {
           var name = a.name;
           var parent = getParent(a);
           while (parent != false && parent.type != "tab") {
             name = parent.name + " " + name;
             for (var id in ins) {
+              var i = ins[id];
               if (i.scope == "protected" && i.z == parent.z) {
                 if (prefixMatch(i.name).startsWith(prefixMatch(name))) {
                   a.ins.push(i);
-                  delete ins[i];
+                  delete ins[id];
                 }
               }
             }
@@ -106,10 +98,34 @@ module.exports = function(RED) {
         }
       }
 
-      // if action is protected
-      // TODO: decend from action's z level to tab looking for matching ins
-      // if ins is protected
-      // TODO: decend from ins' z level to tab looking for matching actions
+      // Match protected ins with explicity named actions
+      var ins = Object.assign({}, ins_object);
+      for (var id in ins) {
+        var i = ins[id];
+        if (i.scope == "protected") {
+          var name = i.name;
+          var parent = getParent(i);
+          while (parent != false && parent.type != "tab") {
+            name = parent.name + " " + name;
+            for (var id in actions) {
+              var a = actions[id];
+              if (a.scope == "protected" && a.z == parent.z) {
+                if (prefixMatch(a.name).startsWith(prefixMatch(name))) {
+                  a.ins.push(i);
+                }
+              }
+            }
+            parent = getParent(parent);
+          }
+        }
+      }
+
+      // Sort matched ins by priority
+      for (var id in actions) {
+        actions[id].ins.sort(function(a, b) {
+          return parseInt(a.priority)-parseInt(b.priority);
+        });
+      }
 
       af["invoke"] = invoke;
       // Return all current enabled actions
