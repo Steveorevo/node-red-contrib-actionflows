@@ -11,39 +11,56 @@
       untilprop: {value: 0},
       until: {value: "gt"},
       loop: {value: "none"},
+      scope: {value: "global"},
       perf: {value: false},
-      private: {value: false}
+      seq: {value: false}
 		},
 		inputs:1,
 		outputs:1,
     icon: function() {
-      if (this.loop == 'none' || typeof this.loop == 'undefined') {
-        if (this.private) {
-          return "actionflows-locked.png";
-        }else{
-          return "actionflows.png";
+      if (this.loop == 'none' || typeof this.loop == "undefined") {
+        var icon = "actionflows.png";
+        if (this.scope == "protected") {
+          icon = "actionflows-shield.png";
         }
+        if (this.scope == "private") {
+          icon = "actionflows-locked.png";
+        }
+        return icon;
       }else{
-        if (this.private) {
-          return "loopflow-locked.png";
-        }else{
-          return "loopflow.png";
+        var icon = "loopflow.png";
+        if (this.scope == "protected") {
+          icon = "loopflow-shield.png";
         }
+        if (this.scope == "private") {
+          icon = "loopflow-locked.png";
+        }
+        return icon;
       }
     },
     paletteLabel: "action",
 		label: function() {
       if (this.loop == 'none') {
-        if (this.private) {
-          this._def.icon = "actionflows-locked.png";
-        }else{
-          this._def.icon = "actionflows.png";
+        switch(this.scope) {
+            case "global":
+                this._def.icon = "actionflows.png";
+                break;
+            case "protected":
+                this._def.icon = "actionflows-shield.png";
+                break;
+            case "private":
+                this._def.icon = "actionflows-locked.png";
         }
       }else{
-        if (this.private) {
-          this._def.icon = "loopflow-locked.png";
-        }else{
-          this._def.icon = "loopflow.png";
+        switch(this.scope) {
+            case "global":
+                this._def.icon = "loopflow.png";
+                break;
+            case "protected":
+                this._def.icon = "loopflow-shield.png";
+                break;
+            case "private":
+                this._def.icon = "loopflow-locked.png";
         }
       }
 			return this.name||"action";
@@ -86,33 +103,6 @@
           $('.af-loop').show();
         }
       }, 1);
-      $("input#node-input-name").change(function(){
-        calcActionIns();
-      });
-      $("input#node-input-private").change(function(){
-        calcActionIns();
-      });
-      var node = this;
-      function calcActionIns() {
-        var afin = RED.nodes.filterNodes({type:"actionflows_in"});
-        var priv = $("input#node-input-private").is(':checked');
-        var ins = [];
-        // Calc action ins
-        afin.forEach(function(i) {
-          if ((priv == false && i.private == false) ||
-              (priv == true && node.z == i.z) ||
-              (i.private == true && node.z == i.z)) {
-                if (i.name.replace(new RegExp("_", 'g'), " ")   // search for prefix while preventing
-                          .replace(new RegExp("-", 'g'), " ")   // substr match (i.e. 'he' in 'head')
-                          .replace(new RegExp("\\.", 'g'), " ") // support domain format
-                          .startsWith($("input#node-input-name").val() + " ")) {
-                  ins.push(i);
-                }
-          }
-        });
-        $("#action-dialog-flow-count").text("There are " + ins.length.toString() + " invokable flows matching this action.");
-      }
-      calcActionIns();
     },
     oneditsave: function() {
       var node = this;
@@ -134,17 +124,22 @@
       name: {value:"action in"},
       priority: {value:"50", required:true, validate:RED.validators.number()},
       links: {value: []},
-      private: {value: true}
+      scope: {value: "global"}
 		},
 		inputs:0,
 		outputs:1,
-		icon: "actionflows-locked.png",
+		icon: "actionflows.png",
     paletteLabel: "action in",
 		label: function() {
-      if (this.private) {
-        this._def.icon = "actionflows-locked.png";
-      }else{
-        this._def.icon = "actionflows.png";
+      switch(this.scope) {
+        case "global":
+          this._def.icon = "actionflows.png";
+          break;
+        case "protected":
+          this._def.icon = "actionflows-shield.png";
+          break;
+        case "private":
+          this._def.icon = "actionflows-locked.png";
       }
 			return this.name||"action in";
 		},
@@ -184,6 +179,14 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
+      <label for="node-input-scope"><i class="fa fa-random"></i> <span>Scope</span></label>
+      <select id="node-input-scope">
+          <option value="global">global</option>
+          <option value="protected">protected</option>
+          <option value="private">private</option>
+      </select>
+    </div>
+    <div class="form-row">
         <label><i class="fa fa-rotate-right"></i> <span>Looping</span></label>
         <select id="node-input-loop" style="width:26%; margin-right:10px;">
           <option value="none">none</option>
@@ -220,19 +223,16 @@
     <div class="form-row node-text-editor-row">
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-description-editor"></div>
     </div>
-    <div class="form-row form-tips" id="action-dialog-flow-count">
-      There are 0 invokable flows matching this action.
-    </div>
-    <div class="form-row" id="node-action-private">
-        <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-private" style="width: 70%;">
-          <span>Private action; limit to flows on this tab or subflow.</span>
-        </label>
-    </div>
     <div class="form-row" id="node-action-perf">
         <input type="checkbox" id="node-input-perf" style="display: inline-block; width: auto; vertical-align: top;">
         <label for="node-input-perf" style="width: 70%;">
-          <span>Debug action cycle execution time?</span>
+          <span>Debug action cycle execution time</span>
+        </label>
+    </div>
+    <div class="form-row" id="node-action-seq">
+        <input type="checkbox" id="node-input-seq" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-seq" style="width: 70%;">
+          <span>Debug invocation sequence</span>
         </label>
     </div>
 </script>
@@ -241,15 +241,17 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row">
+      <label for="node-input-scope"><i class="fa fa-random"></i> <span>Scope</span></label>
+      <select id="node-input-scope">
+          <option value="global">global</option>
+          <option value="protected">protected</option>
+          <option value="private">private</option>
+      </select>
+    </div>
     <div class="form-row" id="priority-details-for">
         <label for="node-input-priority"><i class="fa fa-flag"></i> Priority</label>
         <input type="text" id="node-input-priority" style="text-align:end; width:50px !important">
-    </div>
-    <div class="form-row" id="node-actionin-private">
-        <input type="checkbox" id="node-input-private" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-private" style="width: 70%;">
-          <span>Private flow; limit access to this tab or subflow.</span>
-        </label>
     </div>
 </script>
 <script type="text/x-red" data-template-name="actionflows_out">
