@@ -40,18 +40,34 @@ module.exports = function(RED) {
     // Map actionflows with `action in` assocations on scope settings
     function mapActionFlows(node) {
       // Separate our actions from our ins
+      var af = node.context().global.get("actionflows");
       var RED2 = require.main.require('node-red');
       var flows = RED2.nodes.getFlows().flows;
-      var actionflows = getActionflows();
-      var ins_object = new Object();
-      var actions = new Object();
-      for (var id in actionflows) {
-        if (actionflows[id].type == "actionflows_in") {
-          ins_object[id] = actionflows[id];
+      var actions = af["actions"];
+
+      // Get all enabled actionflows
+      for (var id in actions) {
+        if (typeof actions[id].ins != "undefined") {
+          // Purge old; already have `action in` assoc.
+          delete actions[id];
         }else{
-          actions[id] = actionflows[id];
+          // Purge any disabled tabs
+          var t = findTab(actions[id]);
+          if (t == false || t.disabled == true) {
+            delete actions[id];
+          }else{
+            actions[id].ins = [];
+          }
         }
       }
+      var ins_object = new Object();
+      for (var id in actions) {
+        if (actions[id].type == "actionflows_in") {
+          ins_object[id] = actions[id];
+          delete actions[id];
+        }
+      }
+
       // Build associations between actions and their matching ins
       for (var id in actions) {
         var a = actions[id];
@@ -119,6 +135,7 @@ module.exports = function(RED) {
           }
         }
       }
+      af["ins"] = ins;
 
       // Sort matched ins by priority
       for (var id in actions) {
@@ -126,29 +143,10 @@ module.exports = function(RED) {
           return parseInt(a.priority)-parseInt(b.priority);
         });
       }
+      af["invoke"] = invokeActionIn;
+      af["actions"] = actions;
+      node.context().global.set('actionflows', af);
 
-      af["invoke"] = invoke;
-      // Return all current enabled actions
-      function getActionflows() {
-        var af = node.context().global.get("actionflows");
-        var actions = af["actions"];
-
-        for (var id in actions) {
-          if (typeof actions[id].ins != "undefined") {
-            // Purge old; already have `action in` assoc.
-            delete actions[id];
-          }else{
-            // Purge any disabled tabs
-            var t = findTab(actions[id]);
-            if (t == false || t.disabled == true) {
-              delete actions[id];
-            }else{
-              actions[id].ins = [];
-            }
-          }
-        }
-        return actions;
-      }
       // Return the parent (tab or subflow) of the given item or false
       function getParent(item) {
         var parent = false;
@@ -271,11 +269,47 @@ module.exports = function(RED) {
         return tabs;
       }
       // Furnish invoke function for JavaScript authors
-      function invoke(sName, msg) {
-
+      function invokeActionIn(sName, msg) {
+        // Match action ins with the given name
+        var ains = [];
+        for (var id in ins) {
+          if (prefixMatch(ins[id].name).startsWith(prefixMatch(sName))) {
+            ains.push(ins[id]);
+          }
+        }
+        // Sort `action in` by priority
+        ains.sort(function(a, b) {
+          return parseInt(a.priority)-parseInt(b.priority);
+        });
+        if (typeof msg._af == "undefined") {
+          msg._af = {};
+          msg._af.stack = [];
+        }
+        var done;
+        var event = "af:" + RED2.util.generateId();
+        var handler = function(msg) {
+          if (ains.length > 0) {
+            msg._af["stack"].push(event);
+            RED.events.emit("af:" + ains.shift().id, msg);
+          }else{
+            RED.events.removeListener(event, handler);
+            if (msg._af["stack"].length == 0) {
+              delete msg._af;
+            }
+            done(msg);
+          }
+        }
+        RED.events.on(event, handler);
+        var p = new Promise(function(resolve) {
+          done = resolve;
+        });
+        if (ains.length > 0) {
+          var id = ains.shift().id;
+          msg._af["stack"].push(event);
+          RED.events.emit("af:" + id, msg);
+        }
+        return p;
       }
-      // Update our actions
-      node.context().global.set("actionflows", af);
     }
     this.on("input", function(msg) {
 
