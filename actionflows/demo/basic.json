@@ -1,8 +1,8 @@
 [
     {
-        "id": "e47c0628.8d996",
+        "id": "3b4ff8d0.970fd8",
         "type": "inject",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "",
         "topic": "",
         "payload": "",
@@ -11,29 +11,29 @@
         "crontab": "",
         "once": false,
         "x": 100,
-        "y": 40,
+        "y": 60,
         "wires": [
             [
-                "d769f95b.ab5fd8"
+                "602338ac.7ba688"
             ]
         ]
     },
     {
-        "id": "af6a998b.83bde",
+        "id": "f46f813f.01c9b8",
         "type": "debug",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "",
         "active": true,
         "console": "false",
         "complete": "payload",
         "x": 550,
-        "y": 40,
+        "y": 60,
         "wires": []
     },
     {
-        "id": "d769f95b.ab5fd8",
+        "id": "602338ac.7ba688",
         "type": "change",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "",
         "rules": [
             {
@@ -50,17 +50,17 @@
         "to": "",
         "reg": false,
         "x": 260,
-        "y": 40,
+        "y": 60,
         "wires": [
             [
-                "ce1ce404.7f661"
+                "d323143f.32a8e"
             ]
         ]
     },
     {
-        "id": "ce1ce404.7f661",
+        "id": "d323143f.32a8e",
         "type": "actionflows",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "info": "Describe your action API here.",
         "untilproptype": "num",
         "proptype": "msg",
@@ -69,46 +69,47 @@
         "untilprop": "1",
         "until": "gt",
         "loop": "none",
-        "perf": false,
-        "private": false,
+        "scope": "global",
+        "perf": true,
+        "seq": false,
         "x": 410,
-        "y": 40,
+        "y": 60,
         "wires": [
             [
-                "af6a998b.83bde"
+                "f46f813f.01c9b8"
             ]
         ]
     },
     {
-        "id": "60f6e66.31e2118",
+        "id": "3927d9b6.d8d016",
         "type": "actionflows_in",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "action in",
         "priority": "50",
         "links": [],
-        "private": true,
+        "scope": "private",
         "x": 140,
-        "y": 100,
+        "y": 120,
         "wires": [
             [
-                "62c830ed.2bce2"
+                "a6e044b8.1a8d98"
             ]
         ]
     },
     {
-        "id": "6854d839.fe442",
+        "id": "4979fa78.fdd5fc",
         "type": "actionflows_out",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "action out",
         "links": [],
         "x": 540,
-        "y": 100,
+        "y": 120,
         "wires": []
     },
     {
-        "id": "62c830ed.2bce2",
+        "id": "a6e044b8.1a8d98",
         "type": "change",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "",
         "rules": [
             {
@@ -127,43 +128,43 @@
         "to": "",
         "reg": false,
         "x": 340,
-        "y": 100,
+        "y": 120,
         "wires": [
             [
-                "6854d839.fe442"
+                "4979fa78.fdd5fc"
             ]
         ]
     },
     {
-        "id": "33576e42.80c352",
+        "id": "9a40d66c.a6ab",
         "type": "actionflows_in",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "action 2",
         "priority": "50",
         "links": [],
-        "private": true,
+        "scope": "private",
         "x": 130,
-        "y": 160,
+        "y": 180,
         "wires": [
             [
-                "2afccd26.eeb6c2"
+                "96ca323b.659958"
             ]
         ]
     },
     {
-        "id": "3f3be948.8507ae",
+        "id": "45b30884.46ac4",
         "type": "actionflows_out",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "action 2",
         "links": [],
         "x": 540,
-        "y": 160,
+        "y": 180,
         "wires": []
     },
     {
-        "id": "2afccd26.eeb6c2",
+        "id": "96ca323b.659958",
         "type": "change",
-        "z": "344509a4.4e05ee",
+        "z": "3082c225.0a2e3e",
         "name": "change World for Mars",
         "rules": [
             {
@@ -182,10 +183,10 @@
         "to": "",
         "reg": false,
         "x": 340,
-        "y": 160,
+        "y": 180,
         "wires": [
             [
-                "3f3be948.8507ae"
+                "45b30884.46ac4"
             ]
         ]
     }

@@ -1,8 +1,8 @@
 [
     {
-        "id": "a1800f9.86d5cf",
+        "id": "bb04598c.2a6e08",
         "type": "inject",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "",
         "topic": "",
         "payload": "",
@@ -14,14 +14,14 @@
         "y": 40,
         "wires": [
             [
-                "1550b861.4569a"
+                "aade01b6.d4183"
             ]
         ]
     },
     {
-        "id": "bbdca960.1973",
+        "id": "c9b356c7.cbea48",
         "type": "debug",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "",
         "active": true,
         "console": "false",
@@ -31,9 +31,9 @@
         "wires": []
     },
     {
-        "id": "1550b861.4569a",
+        "id": "aade01b6.d4183",
         "type": "actionflows",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "info": "Describe your action API here.",
         "untilproptype": "num",
         "proptype": "msg",
@@ -42,36 +42,37 @@
         "untilprop": "2",
         "until": "gt",
         "loop": "none",
+        "scope": "global",
         "perf": false,
-        "private": false,
+        "seq": false,
         "x": 270,
         "y": 40,
         "wires": [
             [
-                "bbdca960.1973"
+                "c9b356c7.cbea48"
             ]
         ]
     },
     {
-        "id": "cb1a48b5.6f60a8",
+        "id": "27eca698.fc234a",
         "type": "actionflows_in",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "action in",
         "priority": "50",
         "links": [],
-        "private": true,
+        "scope": "private",
         "x": 100,
         "y": 100,
         "wires": [
             [
-                "30f435e3.4c6992"
+                "74763ac0.6a36cc"
             ]
         ]
     },
     {
-        "id": "ae3055ed.a45f18",
+        "id": "a9d26880.b36a88",
         "type": "actionflows_out",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "action out",
         "links": [],
         "x": 420,
@@ -79,25 +80,25 @@
         "wires": []
     },
     {
-        "id": "c2c92da6.4bf0e8",
+        "id": "b6306ae9.203198",
         "type": "actionflows_in",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "action in 2",
         "priority": "50",
         "links": [],
-        "private": true,
+        "scope": "private",
         "x": 100,
         "y": 160,
         "wires": [
             [
-                "febb3c1e.1a8d28"
+                "508f51d1.70ab3"
             ]
         ]
     },
     {
-        "id": "924bb61f.5ef16",
+        "id": "3714777a.814718",
         "type": "actionflows_out",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "action out 2",
         "links": [],
         "x": 570,
@@ -105,9 +106,9 @@
         "wires": []
     },
     {
-        "id": "987064aa.020bc8",
+        "id": "6fc98d69.9dfe64",
         "type": "actionflows",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "info": "Describe your action API here.",
         "untilproptype": "num",
         "proptype": "msg",
@@ -116,20 +117,21 @@
         "untilprop": 0,
         "until": "gt",
         "loop": "none",
+        "scope": "global",
         "perf": false,
-        "private": false,
+        "seq": false,
         "x": 410,
         "y": 160,
         "wires": [
             [
-                "924bb61f.5ef16"
+                "3714777a.814718"
             ]
         ]
     },
     {
-        "id": "30f435e3.4c6992",
+        "id": "74763ac0.6a36cc",
         "type": "delay",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "",
         "pauseType": "delay",
         "timeout": "2",
@@ -145,14 +147,14 @@
         "y": 100,
         "wires": [
             [
-                "ae3055ed.a45f18"
+                "a9d26880.b36a88"
             ]
         ]
     },
     {
-        "id": "febb3c1e.1a8d28",
+        "id": "508f51d1.70ab3",
         "type": "delay",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "",
         "pauseType": "delay",
         "timeout": "2",
@@ -168,30 +170,30 @@
         "y": 160,
         "wires": [
             [
-                "987064aa.020bc8"
+                "6fc98d69.9dfe64"
             ]
         ]
     },
     {
-        "id": "27d44431.27c0a4",
+        "id": "6fcd6f13.af569",
         "type": "actionflows_in",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "nested in",
         "priority": "50",
         "links": [],
-        "private": true,
+        "scope": "private",
         "x": 240,
         "y": 220,
         "wires": [
             [
-                "4fbd990a.1f8cf8"
+                "4dc033d2.9966bc"
             ]
         ]
     },
     {
-        "id": "8f01de9a.6f11a8",
+        "id": "1e062fcf.5e67d8",
         "type": "actionflows_out",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "nested out",
         "links": [],
         "x": 570,
@@ -199,9 +201,9 @@
         "wires": []
     },
     {
-        "id": "4fbd990a.1f8cf8",
+        "id": "4dc033d2.9966bc",
         "type": "delay",
-        "z": "7cb254cb.f5bbdc",
+        "z": "5911470f.4efe88",
         "name": "",
         "pauseType": "delay",
         "timeout": "2",
@@ -217,7 +219,7 @@
         "y": 220,
         "wires": [
             [
-                "8f01de9a.6f11a8"
+                "1e062fcf.5e67d8"
             ]
         ]
     }
