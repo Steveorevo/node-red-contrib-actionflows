@@ -354,10 +354,78 @@ Scope settings are reflected in the ActionFlows node icons. The icons for
 ![Scope Hint Icons](/actionflows/demo/scope-icons.jpg?raw=true "Scope Hint Icons")
 
 ## ActionFlows and JavaScript
-TBD
+ActionFlows creates a global object called "actionflows" that you can obtain a
+reference to in JavaScript. The object contains a number of data structures and
+methods that determine the runtime behavior of ActionFlows. For instance, the
+ActionFlows' `action in` nodes can be pragmatically invoked using Node-RED's
+native JavaScript function node. To invoke a given `action in` node, you will
+need to obtain a reference to the "actionflows" global object. Line 1 in the
+screenshot below shows how to get a reference to "actionflows" in the
+variable `af`. From there you may use the `af` object's `invoke` method to call
+an existing `action in` node (line 2). The `invoke` method expects two
+parameters; the first should be a string representing the name that any matching
+`action in` node should begin with. The second should be the `msg` object to be
+passed into the matching `action in` node.
 
-### Reserved Action Name
-TBD
+![JavaScript invoke](/actionflows/demo/invoke.jpg?raw=true "JavaScript Invoke")
+
+In the given screenshot, the JavaScript function node invokes the `action in`
+node with the name "action". The flow is executed and appends the string
+" World" to the injector node's "Hello" resulting in "Hello World" in the debug
+window.
+
+[Download the JavaScript Invoke example flow here.](/actionflows/demo/invoke.json)
+
+The `actionflows` global object contains the following methods and properties of
+interest:
+
+### Methods
+**invoke** Invokes any matching `action in` nodes with the name found in the
+first parameter. The second parameter should be the `msg` object to be passed
+into the flow segment. A promise object is returned with a single incoming
+parameter containing the returned `msg` object. Note: the invoke method ignores
+scope settings and can be used to invoke any `action in` node by name.
+
+**map** The map method processes all the found `action` and `action in` nodes
+and builds an associative map. This method is called once internally at
+deployment and determines the order in which each `action in` node is called
+for it's corresponding `action` node. The results are updated in the `actions`
+property (see below).
+
+### Properties
+**actions** An object containing the calculated associative map from the `map`
+method (defined above) that is used internally by ActionFlows. The map is a list
+of enabled `action` node instances with a special `ins` property containing
+corresponding, `action in` node instances based on their priority and scope
+settings. The map allows ActionFlows to quickly execute sequential flows at
+runtime. Editing this list will alter the ActionFlows behavior (use with
+caution). The object can be reset by recalling the `map` method or re-deploying
+to restore the original design-time flow settings.
+
+**afs** An object containing all the `action` nodes in the system. This property
+is used internally by the `map` method to determine the runtime behavior of
+ActionFlows. Altering this list prior to calling the `map` method will
+permanently change the runtime behavior of ActionFlows. Alteration is not
+recommended as this will disable the ability to reset the behavior until
+re-deployment.
+
+**ins** An object containing all the `action in` nodes in the system. This
+property is used internally by the `map` method to determine the runtime
+behavior of ActionFlows. Altering this list prior to calling the `map` method
+will permanently change the runtime behavior of ActionFlows. Alteration is not
+recommended as this will disable the ability to reset the behavior until
+re-deployment.
+
+### Reserved Action Names
+Currently, ActionFlows has only one reserved `action in` node name:
+
+```
+#deployed
+```
+Any `action in` nodes that start with `#deployed` in their name will be invoked
+at deployment. This would be the equivalent of paring an inject node with the
+option for "Inject once at start" set to invoke a flow segment defined by
+ActionFlows.
 
 ## Installation
 Run the following command in your Node-RED user directory (typically ~/.node-red):

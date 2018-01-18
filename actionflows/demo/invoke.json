@@ -1,0 +1,103 @@
+[
+    {
+        "id": "e438af74.14613",
+        "type": "function",
+        "z": "3082c225.0a2e3e",
+        "name": "invoke example",
+        "func": "var af = global.get(\"actionflows\");\nvar p = af.invoke(\"action\", msg);\np.then(function(msg) {\n   node.send(msg); \n});",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 260,
+        "y": 40,
+        "wires": [
+            [
+                "59b81e0c.a6ce28"
+            ]
+        ]
+    },
+    {
+        "id": "6ee2721.4bc4d8c",
+        "type": "inject",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "topic": "",
+        "payload": "Hello",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 90,
+        "y": 40,
+        "wires": [
+            [
+                "e438af74.14613"
+            ]
+        ]
+    },
+    {
+        "id": "59b81e0c.a6ce28",
+        "type": "debug",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 450,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "4741bc95.37f874",
+        "type": "actionflows_in",
+        "z": "3082c225.0a2e3e",
+        "name": "action in",
+        "priority": "50",
+        "links": [],
+        "scope": "global",
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "37e278aa.d45b7"
+            ]
+        ]
+    },
+    {
+        "id": "d31e136a.cb204",
+        "type": "actionflows_out",
+        "z": "3082c225.0a2e3e",
+        "name": "action out",
+        "links": [],
+        "x": 460,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "37e278aa.d45b7",
+        "type": "string",
+        "z": "3082c225.0a2e3e",
+        "name": "append World",
+        "methods": [
+            {
+                "name": "append",
+                "params": [
+                    {
+                        "type": "str",
+                        "value": " World"
+                    }
+                ]
+            }
+        ],
+        "prop": "payload",
+        "propout": "payload",
+        "object": "msg",
+        "objectout": "msg",
+        "x": 280,
+        "y": 100,
+        "wires": [
+            [
+                "d31e136a.cb204"
+            ]
+        ]
+    }
+]
