@@ -24,51 +24,73 @@ module.exports = function(RED) {
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
       af = new Object();
-      af["actions"] = new Object();
+      af["afs"] = new Object();
+      af["ins"] = new Object();
     }
     if (typeof af["map"] == "undefined") {
       af["map"] = function(e) {
         if (e.id == "runtime-state") {
-          mapActionFlows(node);
+          purge();
+          map();
         }
       }
       RED.events.on("runtime-event", af["map"]);
     }
-    af["actions"][config.id] = config;
+    af["afs"][config.id] = config;
+    af["map"] = map;
     node.context().global.set('actionflows', af);
-
+    // Purge flows from prior deployment
+    function purge() {
+      var af = node.context().global.get("actionflows");
+      var afs_object = af["afs"];
+      for (var id in afs_object) {
+        if (afs_object[id].mapped == true) {
+          delete afs_object[id];
+        }
+      }
+      var ins_object = af["ins"];
+      for (var id in ins_object) {
+        if (ins_object[id].mapped == true) {
+          delete ins_object[id];
+        }
+      }
+      af["afs"] = afs_object;
+      af["ins"] = ins_object;
+      node.context().global.set('actionflows', af);
+    }
     // Map actionflows with `action in` assocations on scope settings
-    function mapActionFlows(node) {
+    function map() {
       // Separate our actions from our ins
       var af = node.context().global.get("actionflows");
       var RED2 = require.main.require('node-red');
       var flows = RED2.nodes.getFlows().flows;
-      var actions = af["actions"];
+      var afs_object = af["afs"];
+      var ins_object = af["ins"];
 
-      // Get all enabled actionflows
-      for (var id in actions) {
-        if (typeof actions[id].ins != "undefined") {
-          // Purge old; already have `action in` assoc.
-          delete actions[id];
+      // Purge `action`s on disabled tabs
+      for (var id in afs_object) {
+        var t = findTab(afs_object[id]);
+        if (t == false || t.disabled == true) {
+          delete afs_object[id];
         }else{
-          // Purge any disabled tabs
-          var t = findTab(actions[id]);
-          if (t == false || t.disabled == true) {
-            delete actions[id];
-          }else{
-            actions[id].ins = [];
-          }
+          afs_object[id].ins = [];
         }
+        // Mark for mapped
+        afs_object[id].mapped = true;
       }
-      var ins_object = new Object();
-      for (var id in actions) {
-        if (actions[id].type == "actionflows_in") {
-          ins_object[id] = actions[id];
-          delete actions[id];
+
+      // Purge `action in`s on disabled tabs
+      for (var id in ins_object) {
+        var t = findTab(ins_object[id]);
+        if (t == false || t.disabled == true) {
+          delete ins_object[id];
         }
+        // Mark for mapped
+        ins_object[id].mapped = true;
       }
 
       // Build associations between actions and their matching ins
+      var actions = Object.assign({}, afs_object);
       for (var id in actions) {
         var a = actions[id];
         var ins = Object.assign({}, ins_object);
@@ -135,7 +157,6 @@ module.exports = function(RED) {
           }
         }
       }
-      af["ins"] = ins;
 
       // Sort matched ins by priority
       for (var id in actions) {
@@ -310,6 +331,7 @@ module.exports = function(RED) {
         }
         return p;
       }
+      invokeActionIn("#deployed", {payload:""});
     }
     this.on("input", function(msg) {
 
@@ -537,10 +559,11 @@ module.exports = function(RED) {
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
       af = new Object();
-      af["actions"] = new Object();
+      af["afs"] = new Object();
+      af["ins"] = new Object();
     }
     // Save details
-    af["actions"][config.id] = config;
+    af["ins"][config.id] = config;
     node.context().global.set('actionflows', af);
     this.on("input", function(msg) {
         this.send(msg);
