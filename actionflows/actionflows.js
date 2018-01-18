@@ -30,8 +30,8 @@ module.exports = function(RED) {
     if (typeof af["map"] == "undefined") {
       af["map"] = function(e) {
         if (e.id == "runtime-state") {
-          purge();
-          map();
+          purge(node);
+          map(node);
         }
       }
       RED.events.on("runtime-event", af["map"]);
@@ -39,305 +39,6 @@ module.exports = function(RED) {
     af["afs"][config.id] = config;
     af["map"] = map;
     node.context().global.set('actionflows', af);
-    // Purge flows from prior deployment
-    function purge() {
-      var af = node.context().global.get("actionflows");
-      var afs_object = af["afs"];
-      for (var id in afs_object) {
-        if (afs_object[id].mapped == true) {
-          delete afs_object[id];
-        }
-      }
-      var ins_object = af["ins"];
-      for (var id in ins_object) {
-        if (ins_object[id].mapped == true) {
-          delete ins_object[id];
-        }
-      }
-      af["afs"] = afs_object;
-      af["ins"] = ins_object;
-      node.context().global.set('actionflows', af);
-    }
-    // Map actionflows with `action in` assocations on scope settings
-    function map() {
-      // Separate our actions from our ins
-      var af = node.context().global.get("actionflows");
-      var RED2 = require.main.require('node-red');
-      var flows = RED2.nodes.getFlows().flows;
-      var afs_object = af["afs"];
-      var ins_object = af["ins"];
-
-      // Purge `action`s on disabled tabs
-      for (var id in afs_object) {
-        var t = findTab(afs_object[id]);
-        if (t == false || t.disabled == true) {
-          delete afs_object[id];
-        }else{
-          afs_object[id].ins = [];
-        }
-        // Mark for mapped
-        afs_object[id].mapped = true;
-      }
-
-      // Purge `action in`s on disabled tabs
-      for (var id in ins_object) {
-        var t = findTab(ins_object[id]);
-        if (t == false || t.disabled == true) {
-          delete ins_object[id];
-        }
-        // Mark for mapped
-        ins_object[id].mapped = true;
-      }
-
-      // Build associations between actions and their matching ins
-      var actions = Object.assign({}, afs_object);
-      for (var id in actions) {
-        var a = actions[id];
-        var ins = Object.assign({}, ins_object);
-        // Match actionflows on same z plane, regardless of scope
-        for (var id in ins) {
-          var i = ins[id];
-          if (i.z == a.z) {
-            if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
-              a.ins.push(i);
-              delete ins[id];
-            }
-          }
-        }
-        // Match any global actionflows
-        if (a.scope == "global") {
-          for (var id in ins) {
-            var i = ins[id];
-            if (i.scope == "global") {
-              if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
-                a.ins.push(i);
-                delete ins[i];
-              }
-            }
-          }
-        }
-        // Match protected actionflows to explicitly named ins
-        if (a.scope == "protected") {
-          var name = a.name;
-          var parent = getParent(a);
-          while (parent != false && parent.type != "tab") {
-            name = parent.name + " " + name;
-            for (var id in ins) {
-              var i = ins[id];
-              if (i.scope == "protected" && i.z == parent.z) {
-                if (prefixMatch(i.name).startsWith(prefixMatch(name))) {
-                  a.ins.push(i);
-                  delete ins[id];
-                }
-              }
-            }
-            parent = getParent(parent);
-          }
-        }
-      }
-
-      // Match protected ins with explicity named actions
-      var ins = Object.assign({}, ins_object);
-      for (var id in ins) {
-        var i = ins[id];
-        if (i.scope == "protected") {
-          var name = i.name;
-          var parent = getParent(i);
-          while (parent != false && parent.type != "tab") {
-            name = parent.name + " " + name;
-            for (var id in actions) {
-              var a = actions[id];
-              if (a.scope == "protected" && a.z == parent.z) {
-                if (prefixMatch(a.name).startsWith(prefixMatch(name))) {
-                  a.ins.push(i);
-                }
-              }
-            }
-            parent = getParent(parent);
-          }
-        }
-      }
-
-      // Sort matched ins by priority
-      for (var id in actions) {
-        actions[id].ins.sort(function(a, b) {
-          return parseInt(a.priority)-parseInt(b.priority);
-        });
-      }
-      af["invoke"] = invokeActionIn;
-      af["actions"] = actions;
-      node.context().global.set('actionflows', af);
-
-      // Return the parent (tab or subflow) of the given item or false
-      function getParent(item) {
-        var parent = false;
-        if (item.type == "tab") {
-          return parent;
-        }
-        var subs = getSubflows();
-        for (var i = 0; i < subs.length; i++) {
-          if (subs[i].id == item.z) {
-            parent = subs[i];
-            break;
-          }
-        }
-        if (parent == false) {
-          var tabs = getTabs();
-          for (var i = 0; i < tabs.length; i++) {
-            if (tabs[i].id == item.z) {
-              parent = tabs[i];
-              break;
-            }
-          }
-        }
-        return parent;
-      }
-      // Return all subflows recursively from the given array
-      function getSubflows(scan) {
-        if (typeof scan == "undefined") {
-          scan = flows;
-        }
-        var items = [];
-        for (var i = 0; i < scan.length; i++) {
-          if (scan[i].type.startsWith("subflow:")) {
-            items.push({
-              name: getSubflowName(scan[i]),
-              type: scan[i].type,
-              id: scan[i].id,
-              z: scan[i].z
-            });
-          }
-        }
-        // Return the subflow name, or its default
-        function getSubflowName(ss) {
-          if (typeof ss.name == "undefined" || ss.name == "") {
-            var name = "";
-            for (var f = 0; f < flows.length; f++) {
-              if (flows[f].id == ss.type.substr(8)) {
-                name = flows[f].name;
-                break;
-              }
-            }
-            return name;
-          }else{
-            return ss.name;
-          }
-        };
-        var more = [];
-        items.forEach(function(f) {
-          var sub = RED.nodes.getNode(f.id);
-          if (sub != null) {
-            if (typeof sub.instanceNodes != "undefined") {
-              var inst = sub.instanceNodes;
-              for(var id in inst) {
-                if (id != f.id) {
-                  var subsub = Object.assign({}, inst[id]);
-                  if (subsub.type.startsWith("subflow:")) {
-                    more.push({
-                      name: getSubflowName(subsub),
-                      type: subsub.type,
-                      id: subsub.id,
-                      z: subsub.z
-                    });
-                  }
-                }
-              }
-            }
-          }
-        });
-        if (more.length > 0) {
-          var subsub = getSubflows(more);
-          if (subsub.length > 0) {
-            items = items.concat(subsub);
-          }
-        }
-        return items;
-      }
-      // Support dividers; dot, dash, space, underscore
-      function prefixMatch(s) {
-        return s.replace(new RegExp("_", 'g'), " ")
-                .replace(new RegExp("-", 'g'), " ")
-                .replace(new RegExp("\\.", 'g'), " ") + " ";
-      }
-      // Given the item instance, return the tab it lives on or false
-      function findTab(item) {
-        if (item.type == "tab") {
-          return item;
-        }
-        var tabs = getTabs();
-        var t = tabs.find(function(t) {
-          return item.z == t.id;
-        });
-        if (typeof t == "undefined") {
-          var subs = getSubflows();
-          t = subs.find(function(s) {
-            return item.z == s.id;
-          });
-        }
-        if (typeof t == "undefined") {
-          return false;
-        }
-        return findTab(t);
-      }
-      // Return all tabs
-      function getTabs() {
-        var tabs = [];
-        for (var i = 0; i < flows.length; i++) {
-          if (flows[i].type == "tab") {
-            tabs.push(flows[i]);
-          }
-        }
-        return tabs;
-      }
-      // Furnish invoke function for JavaScript authors
-      function invokeActionIn(sName, msg) {
-        // Match action ins with the given name
-        var ains = [];
-        for (var id in ins) {
-          if (prefixMatch(ins[id].name).startsWith(prefixMatch(sName))) {
-            ains.push(ins[id]);
-          }
-        }
-        // Sort `action in` by priority
-        ains.sort(function(a, b) {
-          return parseInt(a.priority)-parseInt(b.priority);
-        });
-        if (typeof msg._af == "undefined") {
-          msg._af = {};
-          msg._af.stack = [];
-        }
-        var done;
-        var event = "af:" + RED2.util.generateId();
-        var handler = function(msg) {
-          if (ains.length > 0) {
-            callActionIn();
-          }else{
-            RED.events.removeListener(event, handler);
-            if (msg._af["stack"].length == 0) {
-              delete msg._af;
-            }
-            done(msg);
-          }
-        }
-        RED.events.on(event, handler);
-        var p = new Promise(function(resolve) {
-          done = resolve;
-        });
-        if (ains.length > 0) {
-          callActionIn();
-        }
-        function callActionIn() {
-          msg._af["stack"].push(event);
-          var ain_node = ains.shift();
-          if (sName == "#deployed") {
-            msg.payload = Object.assign({}, getParent(ain_node));
-          }
-          RED.events.emit("af:" + ain_node.id, msg);
-        }
-        return p;
-      }
-      invokeActionIn("#deployed", {payload:""});
-    }
     this.on("input", function(msg) {
 
       // Check no matching `action in`s, just move along
@@ -567,6 +268,15 @@ module.exports = function(RED) {
       af["afs"] = new Object();
       af["ins"] = new Object();
     }
+    if (typeof af["map"] == "undefined") {
+      af["map"] = function(e) {
+        if (e.id == "runtime-state") {
+          purge(node);
+          map(node);
+        }
+      }
+      RED.events.on("runtime-event", af["map"]);
+    }
     // Save details
     af["ins"][config.id] = config;
     node.context().global.set('actionflows', af);
@@ -583,5 +293,304 @@ module.exports = function(RED) {
         RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
       }
 		});
+  }
+  // Purge flows from prior deployment
+  function purge(node) {
+    var af = node.context().global.get("actionflows");
+    var afs_object = af["afs"];
+    for (var id in afs_object) {
+      if (afs_object[id].mapped == true) {
+        delete afs_object[id];
+      }
+    }
+    var ins_object = af["ins"];
+    for (var id in ins_object) {
+      if (ins_object[id].mapped == true) {
+        delete ins_object[id];
+      }
+    }
+    af["afs"] = afs_object;
+    af["ins"] = ins_object;
+    node.context().global.set('actionflows', af);
+  }
+  // Map actionflows with `action in` assocations on scope settings
+  function map(node) {
+    // Separate our actions from our ins
+    var af = node.context().global.get("actionflows");
+    var RED2 = require.main.require('node-red');
+    var flows = RED2.nodes.getFlows().flows;
+    var afs_object = af["afs"];
+    var ins_object = af["ins"];
+
+    // Purge `action`s on disabled tabs
+    for (var id in afs_object) {
+      var t = findTab(afs_object[id]);
+      if (t == false || t.disabled == true) {
+        delete afs_object[id];
+      }else{
+        afs_object[id].ins = [];
+      }
+      // Mark for mapped
+      afs_object[id].mapped = true;
+    }
+
+    // Purge `action in`s on disabled tabs
+    for (var id in ins_object) {
+      var t = findTab(ins_object[id]);
+      if (t == false || t.disabled == true) {
+        delete ins_object[id];
+      }
+      // Mark for mapped
+      ins_object[id].mapped = true;
+    }
+
+    // Build associations between actions and their matching ins
+    var actions = Object.assign({}, afs_object);
+    for (var id in actions) {
+      var a = actions[id];
+      var ins = Object.assign({}, ins_object);
+      // Match actionflows on same z plane, regardless of scope
+      for (var id in ins) {
+        var i = ins[id];
+        if (i.z == a.z) {
+          if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
+            a.ins.push(i);
+            delete ins[id];
+          }
+        }
+      }
+      // Match any global actionflows
+      if (a.scope == "global") {
+        for (var id in ins) {
+          var i = ins[id];
+          if (i.scope == "global") {
+            if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
+              a.ins.push(i);
+              delete ins[i];
+            }
+          }
+        }
+      }
+      // Match protected actionflows to explicitly named ins
+      if (a.scope == "protected") {
+        var name = a.name;
+        var parent = getParent(a);
+        while (parent != false && parent.type != "tab") {
+          name = parent.name + " " + name;
+          for (var id in ins) {
+            var i = ins[id];
+            if (i.scope == "protected" && i.z == parent.z) {
+              if (prefixMatch(i.name).startsWith(prefixMatch(name))) {
+                a.ins.push(i);
+                delete ins[id];
+              }
+            }
+          }
+          parent = getParent(parent);
+        }
+      }
+    }
+
+    // Match protected ins with explicity named actions
+    var ins = Object.assign({}, ins_object);
+    for (var id in ins) {
+      var i = ins[id];
+      if (i.scope == "protected") {
+        var name = i.name;
+        var parent = getParent(i);
+        while (parent != false && parent.type != "tab") {
+          name = parent.name + " " + name;
+          for (var id in actions) {
+            var a = actions[id];
+            if (a.scope == "protected" && a.z == parent.z) {
+              if (prefixMatch(a.name).startsWith(prefixMatch(name))) {
+                a.ins.push(i);
+              }
+            }
+          }
+          parent = getParent(parent);
+        }
+      }
+    }
+
+    // Sort matched ins by priority
+    for (var id in actions) {
+      actions[id].ins.sort(function(a, b) {
+        return parseInt(a.priority)-parseInt(b.priority);
+      });
+    }
+    af["invoke"] = invokeActionIn;
+    af["actions"] = actions;
+    node.context().global.set('actionflows', af);
+
+    // Return the parent (tab or subflow) of the given item or false
+    function getParent(item) {
+      var parent = false;
+      if (item.type == "tab") {
+        return parent;
+      }
+      var subs = getSubflows();
+      for (var i = 0; i < subs.length; i++) {
+        if (subs[i].id == item.z) {
+          parent = subs[i];
+          break;
+        }
+      }
+      if (parent == false) {
+        var tabs = getTabs();
+        for (var i = 0; i < tabs.length; i++) {
+          if (tabs[i].id == item.z) {
+            parent = tabs[i];
+            break;
+          }
+        }
+      }
+      return parent;
+    }
+    // Return all subflows recursively from the given array
+    function getSubflows(scan) {
+      if (typeof scan == "undefined") {
+        scan = flows;
+      }
+      var items = [];
+      for (var i = 0; i < scan.length; i++) {
+        if (scan[i].type.startsWith("subflow:")) {
+          items.push({
+            name: getSubflowName(scan[i]),
+            type: scan[i].type,
+            id: scan[i].id,
+            z: scan[i].z
+          });
+        }
+      }
+      // Return the subflow name, or its default
+      function getSubflowName(ss) {
+        if (typeof ss.name == "undefined" || ss.name == "") {
+          var name = "";
+          for (var f = 0; f < flows.length; f++) {
+            if (flows[f].id == ss.type.substr(8)) {
+              name = flows[f].name;
+              break;
+            }
+          }
+          return name;
+        }else{
+          return ss.name;
+        }
+      };
+      var more = [];
+      items.forEach(function(f) {
+        var sub = RED.nodes.getNode(f.id);
+        if (sub != null) {
+          if (typeof sub.instanceNodes != "undefined") {
+            var inst = sub.instanceNodes;
+            for(var id in inst) {
+              if (id != f.id) {
+                var subsub = Object.assign({}, inst[id]);
+                if (subsub.type.startsWith("subflow:")) {
+                  more.push({
+                    name: getSubflowName(subsub),
+                    type: subsub.type,
+                    id: subsub.id,
+                    z: subsub.z
+                  });
+                }
+              }
+            }
+          }
+        }
+      });
+      if (more.length > 0) {
+        var subsub = getSubflows(more);
+        if (subsub.length > 0) {
+          items = items.concat(subsub);
+        }
+      }
+      return items;
+    }
+    // Support dividers; dot, dash, space, underscore
+    function prefixMatch(s) {
+      return s.replace(new RegExp("_", 'g'), " ")
+              .replace(new RegExp("-", 'g'), " ")
+              .replace(new RegExp("\\.", 'g'), " ") + " ";
+    }
+    // Given the item instance, return the tab it lives on or false
+    function findTab(item) {
+      if (item.type == "tab") {
+        return item;
+      }
+      var tabs = getTabs();
+      var t = tabs.find(function(t) {
+        return item.z == t.id;
+      });
+      if (typeof t == "undefined") {
+        var subs = getSubflows();
+        t = subs.find(function(s) {
+          return item.z == s.id;
+        });
+      }
+      if (typeof t == "undefined") {
+        return false;
+      }
+      return findTab(t);
+    }
+    // Return all tabs
+    function getTabs() {
+      var tabs = [];
+      for (var i = 0; i < flows.length; i++) {
+        if (flows[i].type == "tab") {
+          tabs.push(flows[i]);
+        }
+      }
+      return tabs;
+    }
+    // Furnish invoke function for JavaScript authors
+    function invokeActionIn(sName, msg) {
+      // Match action ins with the given name
+      var ains = [];
+      for (var id in ins) {
+        if (prefixMatch(ins[id].name).startsWith(prefixMatch(sName))) {
+          ains.push(ins[id]);
+        }
+      }
+      // Sort `action in` by priority
+      ains.sort(function(a, b) {
+        return parseInt(a.priority)-parseInt(b.priority);
+      });
+      if (typeof msg._af == "undefined") {
+        msg._af = {};
+        msg._af.stack = [];
+      }
+      var done;
+      var event = "af:" + RED2.util.generateId();
+      var handler = function(msg) {
+        if (ains.length > 0) {
+          callActionIn();
+        }else{
+          RED.events.removeListener(event, handler);
+          if (msg._af["stack"].length == 0) {
+            delete msg._af;
+          }
+          done(msg);
+        }
+      }
+      RED.events.on(event, handler);
+      var p = new Promise(function(resolve) {
+        done = resolve;
+      });
+      if (ains.length > 0) {
+        callActionIn();
+      }
+      function callActionIn() {
+        msg._af["stack"].push(event);
+        var ain_node = ains.shift();
+        if (sName == "#deployed") {
+          msg.payload = Object.assign({}, getParent(ain_node));
+        }
+        RED.events.emit("af:" + ain_node.id, msg);
+      }
+      return p;
+    }
+    invokeActionIn("#deployed", {payload:""});
   }
 }
