@@ -85,7 +85,7 @@ execution time" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
 
-![ActionFlows Benchmarks](/actionflows/demo/bench2.png?raw=true "Debug Execution Time")
+![ActionFlows Benchmarks](/actionflows/demo/bench2.jpg?raw=true "Debug Execution Time")
 
 > Note: Benchmarks report how long it takes to run all matching `action in/out`
 > flows for one given iteration. Loops return to the `action` node before
@@ -293,7 +293,7 @@ prefix to identify the subflow location of other ActionFlows nodes. The prefix
 is the name of the subflow where the corresponding `action` or `action in` node
 exists. In the screenshot above we have two examples:
 
-*An example of an `action` node calling a flow segment defined outside the subflow.*
+**An example of an `action` node calling a flow segment defined outside the subflow.**
 1a) The subflow is defined on the tab with the name "acme", it is invoked with
 an injector supplying the string "Hello".
 1b) The injector activates the subflow's `action` node named "action".
@@ -305,7 +305,7 @@ The flow segment contains a change node that alters the "Hello string" and
 changes it to "Hi".
 
 
-*An example of a flow segment defined inside a subflow and accessed from outside.*
+**An example of a flow segment defined inside a subflow and accessed from outside.**
 2a) The `action` node named "acme.sample in" finds the defined flow segment
 inside the subflow named "acme".
 2b) Within the "acme" subflow is the `action in` node named "sample".
