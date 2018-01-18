@@ -272,18 +272,46 @@
   <code>action</code> node. Use a space, underscore, hyphen or period
   to separate the prefix from your segment&#39;s own unique name/description.
   </p>
+  <h4>Scope</h4>
+  <p>Scope provides functionality for flows that are more commonly found in OOP
+  (object oriented programming) environments. Using scopes with ActionFlows allows
+  you to build reusable flow libraries that may act as base for other flows.
+  Regardless of the scope setting, <code>action</code> nodes will invoke all matching
+  <code>action in</code> flows that are on the same &quot;z plane&quot; (same tab
+  or within the same subflow). However, there are many benefits to using the different scope modes
+  and in different combinations. Here are the three main levels of scope which
+  define flow behaviors:</p>
+  <dl class="message-properties">
+    <dt>Global</dt>
+    <dd>The &quot;global&quot; scope is the default mode. The &quot;global&quot; setting allows you to use
+    ActionFlows across multiple tabs or within different subflows. An <code>action</code> node
+    will invoke any <code>action in</code> flow segment across the system, regardless of where
+    they are defined (within subflows or other tabs). Flows will be invoked if the
+    <code>action in</code> node&apos;s name begins with the name of the corresponding <code>action</code> node.</dd>
+    <dt>Protected</dt>
+    <dd>Using the &quot;protected&quot; scope setting for ActionFlows allows you to group
+    functionality while avoiding conflicts with common names that could occur with
+    global scope. Unlike global scope, protected scope restricts <code>action</code> and
+    corresponding <code>action in</code> nodes to the same tab. Furthermore, protected scope
+    places restrictions on accessing ActionFlows within a subflow; you may still
+    access them but must first declare a prefix that is the subflow&apos;s name. This
+    allows you to work with multiple subflows as **object instances** in a similar
+    fashion that OOP developers use classes and objects with public or private
+    methods.</dd>
+    <dt>Private</dt>
+    <dd>Private flows are useful if your actions have a commonly used name and/or you
+    wish to restrict extendability to within a subflow or tab. Unlike protected
+    scope, private scope inhibits the ability to invoke or respond to ActionFlows
+    that are defined outside of the given subflow or tab where the ActionFlows
+    exists. Using private scope helps avoid naming conflicts but prevents
+    extensibility.</dd>
+  </dl>
   <h4>Priority</h4>
   <p>Use the priority field to determine the priority order for the flow segment.
   The flow segment with the lowest priority number will execute sooner than seqments
   with higher numbers (0 to 99). It is recommend that you leave the default (50)
   if execution order is not required. I.e. two flows with the same name will
   will execute in priority order sequence; 45 will execute before 50, etc.</p>
-  <h4>Private flow</h4>
-  <p>Use the private flow checkbox to limit this <code>action in</code> node&#39;s
-  flow to <code>action</code> nodes calling from within the same tab or within the
-  same subflow. Uncheck to allow actions to invoke this <code>action in</code> node
-  from other tabs or subflows (where the <code>action</code> node&#39;s own private
-  checkbox is unchecked).</p>
   <h3>References</h3>
   <ul>
        <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-actionflows" target=_blank>node-red-contrib-actionflows</a> project on GitHub.</li>
