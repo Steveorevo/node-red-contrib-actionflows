@@ -310,8 +310,7 @@ module.exports = function(RED) {
         var event = "af:" + RED2.util.generateId();
         var handler = function(msg) {
           if (ains.length > 0) {
-            msg._af["stack"].push(event);
-            RED.events.emit("af:" + ains.shift().id, msg);
+            callActionIn();
           }else{
             RED.events.removeListener(event, handler);
             if (msg._af["stack"].length == 0) {
@@ -325,9 +324,15 @@ module.exports = function(RED) {
           done = resolve;
         });
         if (ains.length > 0) {
-          var id = ains.shift().id;
+          callActionIn();
+        }
+        function callActionIn() {
           msg._af["stack"].push(event);
-          RED.events.emit("af:" + id, msg);
+          var ain_node = ains.shift();
+          if (sName == "#deployed") {
+            msg.payload = Object.assign({}, getParent(ain_node));
+          }
+          RED.events.emit("af:" + ain_node.id, msg);
         }
         return p;
       }

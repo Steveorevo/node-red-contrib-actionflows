@@ -1,0 +1,67 @@
+[
+    {
+        "id": "731ca76d.99d86",
+        "type": "subflow",
+        "name": "Subflow 1",
+        "info": "",
+        "in": [],
+        "out": []
+    },
+    {
+        "id": "4761e1c6.6973c",
+        "type": "actionflows_in",
+        "z": "731ca76d.99d86",
+        "name": "#deployed",
+        "priority": "50",
+        "links": [],
+        "scope": "global",
+        "x": 100,
+        "y": 60,
+        "wires": [
+            [
+                "f78774a2.065538",
+                "3fbb9a2f.41a166"
+            ]
+        ]
+    },
+    {
+        "id": "f78774a2.065538",
+        "type": "actionflows_out",
+        "z": "731ca76d.99d86",
+        "name": "#deployed",
+        "links": [],
+        "x": 370,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "3fbb9a2f.41a166",
+        "type": "debug",
+        "z": "731ca76d.99d86",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "payload.name",
+        "x": 270,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "7e9f9daf.60cc6c",
+        "type": "subflow:731ca76d.99d86",
+        "z": "9af0924c.c75d2",
+        "name": "I am instance 2",
+        "x": 120,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "95d95eb1.a4b4",
+        "type": "subflow:731ca76d.99d86",
+        "z": "9af0924c.c75d2",
+        "name": "I am instance 1",
+        "x": 120,
+        "y": 40,
+        "wires": []
+    }
+]

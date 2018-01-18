@@ -375,6 +375,7 @@ node with the name "action". The flow is executed and appends the string
 window.
 
 [Download the JavaScript Invoke example flow here.](/actionflows/demo/invoke.json)
+*Note: the JavaScript Invoke example requires the [string](https://flows.nodered.org/node/node-red-contrib-string) node.*
 
 The `actionflows` global object contains the following methods and properties of
 interest:
@@ -422,10 +423,19 @@ Currently, ActionFlows has only one reserved `action in` node name:
 ```
 #deployed
 ```
-Any `action in` nodes that start with `#deployed` in their name will be invoked
+Any `action in` nodes that start with "#deployed" in their name will be invoked
 at deployment. This would be the equivalent of pairing an inject node with the
 option for "Inject once at start" set to invoke a flow segment defined by
-ActionFlows.
+ActionFlows. The `action in` node named "#deployed" will also contain a
+msg.payload object property that references the *parent container* the
+`action in` node lives in (i.e. a tab or subflow).
+
+![#deployed Event](/actionflows/demo/deployed.jpg?raw=true "#deployed Event")
+
+This feature can be used to obtain the subflow instance name should you require
+a reference to it within your subflow object instance.
+
+[Download the #deployed event example flow here.](/actionflows/demo/deployed.json)
 
 ## Installation
 Run the following command in your Node-RED user directory (typically ~/.node-red):
