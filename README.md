@@ -255,7 +255,7 @@ contain string data.
 ## Libraries and Scope
 Scope provides functionality for flows that are more commonly found in OOP
 (object oriented programming) environments. Using scopes with ActionFlows allows
-you to build reusable flow libraries that may act as base for other flows.
+you to build reusable flow libraries that may act as a base for other flows.
 Regardless of the scope setting, `action` nodes will invoke all matching
 `action in` flows that are on the same "z plane" (same tab or within the same
 subflow). However, there are many benefits to using the different scope modes
@@ -308,7 +308,7 @@ to "Hi".
 **An example of a flow segment defined inside a subflow and accessed from outside.**
   2a) The `action` node named "acme.sample in" finds the defined flow segment
 inside the subflow named "acme".
-  2b) Within the "acme" subflow is the `action in` node named "sample".
+  2b) Within the "acme" subflow is the `action in` node named "sample in".
 
 The flow segment has a change node that changes the injector's "Hello"
 string to "Good bye".
