@@ -1,8 +1,10 @@
 # node-red-contrib-actionflows
-Provides three nodes that allow you to create extensible, reusable,
-looped, and prioritized flows. ActionFlows includes performance benchmarks with
-nanosecond precision. Advanced use enables the ability to group flows into
-"libraries" by using Node-RED's subflow capabilities. You can organize flows for
+ActionFlows brings easy to use loops and OOP (object oriented programming)
+features to Node-RED's flow programming paradigm. Three nodes allow you to
+create extensible, scoped, looped, and prioritized flows. Utilities include
+performance benchmarks with nanosecond precision. Advanced use enables the
+ability to group flows into "libraries" using Node-RED's native subflow
+capabilities and invocation via JavaScript. You can organize flows for
 readability and create extendable design patterns. To understand ActionFlows,
 review each section starting with Basics below and each section's examples.
 
@@ -20,10 +22,11 @@ This technique can also be used to organize your existing flows for readability,
 but links and subflows maybe better suited for that single purpose. ActionFlows
 provide additional key functionality (described later in this document):
 
-* "Late binding"; extend flows without modifying the original flow
-* Looping; call flow segments with conditional iteration
-* Prioritize flows; allow for OOP-like overrides
-* Private and shared flows
+* "Late binding"; extend complex flows without modifying the original flow
+* Looping; call flow segments repeatedly with conditional iteration
+* Create OOP-like "classes" (subflows) with public/private flows
+* Prioritize flows; allow for OOP-like overrides & inheritance
+* Flow scopes; private, protected, and global flows
 
 Simply include the `action` flow inline at specific points where you would like
 to enable vendor customization. Like Node-RED's native subflows, a description
@@ -42,8 +45,8 @@ to the original flow. An `action` node's name determines the name of the
 corresponding `action in` node that will be activated. Use the `action` node's
 name as a prefix for all subsequent `action in` nodes that you wish to be
 callable by the `action` node. For instance, an `action` node named "Sample",
-will activate any `action in` nodes with names like "Sample in", "Sample-in",
-"Sample_Exercise", or "Sample.Acme.com".
+will call any `action in` nodes with names like "Sample in", "Sample-in",
+"Sample_Exercise", or "sample.acme.com".
 
 ```
 A prefix is an existing `action` node's name followed by
@@ -65,20 +68,20 @@ In the example above:
 The versatility of ActionFlows allows the adding of additional flow sequences
 after the original flow has been authored. The `action in` node's flow segments
 can be created or imported dynamically (such as with the `flowman` node). Flows
-can be defined on other tabs or within subflows (see the "Libraries" section
-below) or restricted to the same tab or subflow where the calling `action` node
-has been defined.
+can be defined on other tabs or within subflows (see the "Libraries and Scope"
+section below) or restricted to the same tab or subflow where the calling
+`action` node has been defined.
 
 Flow sequence order can also be changed by the `action in` node's settings (see
 the "Priorities" section).
 
 [Download the Basic example flow here.](/actionflows/demo/basic.json)
 
-### Benchmarks
+### Benchmarks and Debugging
 
 Benchmarks in the `action` node allow you to see how long all `action in` flow
 sequences take to execute. Use the checkbox labelled "Debug action cycle
-execution time?" to see debug output indicating how long it took to run all of
+execution time" to see debug output indicating how long it took to run all of
 the corresponding `action in/out` flow segments before returning to the calling
 action.
 
@@ -88,14 +91,17 @@ action.
 > flows for one given iteration. Loops return to the `action` node before
 > repeating and may generate multiple debug outputs.
 
+Use the "Debug invocation sequence" checkbox to reveal the name of each
+`action in` that is called, it's sequence order, and node id in the debug tab.
+
 ### Priorities
 Priorities allow you to define ActionFlows that take precedence over other
-ActionFlows. Inspired by [WordPress' core actions and filters API](https://codex.wordpress.org/Plugin_API#Hooks:_Actions_and_Filters), Priorities
-are at the heart of manageable extendability. In our Basic example sequence
-we see that two `action in/out` flow segments have been defined; each changing
-the "Hello World" in `msg.payload` to eventually become "Hello Mars, and Solar
-System!". However, if we simply change the `action in/out` flow sequences, we
-end up with "Hello Mars" in the `msg.payload`.
+ActionFlows. Inspired by [WordPress' core actions and filters API](https://codex.wordpress.org/Plugin_API#Hooks:_Actions_and_Filters),
+Priorities are at the heart of manageable extendability. In our Basic example
+sequence we see that two `action in/out` flow segments have been defined; each
+changing the "Hello World" in `msg.payload` to eventually become "Hello Mars,
+and Solar System!". However, if we simply change the `action in/out` flow
+sequences, we end up with "Hello Mars" in the `msg.payload`.
 
 ![ActionFlows Priorities](/actionflows/demo/priority2.png?raw=true "Flow Priorities")
 
@@ -123,7 +129,8 @@ include their `action in/out` flows leveraging the same `action` node.
 ### Nesting
 ActionFlows can be nested whereby a flow segment can include an `action` node
 that in turn, invokes additional `action in/out` flow segments. One way to trace
-an ActionFlows' sequence is to use the `delay` node. Be sure to set the delay
+an ActionFlows' sequence is to use the "Debug invocation sequence" checkbox or,
+(as illustrated below) by using the `delay` node. Be sure to set the delay
 to above 2 seconds to see the blue dot appear in the `action in/out` flow path
 and for the green dot and "running" indicator under the active `action` node.
 Please see the animated gif below.
@@ -245,44 +252,112 @@ variable/value. Note: the given variable and comparison variable/value should
 contain string data.
 
 
-## Libraries
-You can use multiple ActionFlows on tabs. However, you can also encapsulate
-functionality by placing the nodes inside a subflow. The subflow does not need
-to have any inputs or outputs. Placing an instance of the subflow on your tab
-will enable the ActionFlows. You can use the Private settings in the `action`
-node and `action in` nodes to expose functionality to other tabs and subflows or
-to limit their access and restrict functionality to the given subflow or tab.
+## Libraries and Scope
+Scope provides functionality for flows that are more commonly found in OOP
+(object oriented programming) environments. Using scopes with ActionFlows allows
+you to build reusable flow libraries that may act as base for other flows.
+Regardless of the scope setting, `action` nodes will invoke all matching
+`action in` flows that are on the same "z plane" (same tab or within the same
+subflow). However, there are many benefits to using the different scope modes
+and in different combinations. Here are the three main levels of scope which
+define ActionFlows' behaviors:
 
-### Private actions
-Use the private checkbox in the `action` node's settings to restrict calling any
-`action in/out` flow sequences to the same tab or within the given subflow.
-Uncheck the checkbox to allow invoking flow sequences defined on other tabs, or
-subflows.
+#### global
+The "global" scope is the default mode. The "global" setting allows you to use
+ActionFlows across multiple tabs or within different subflows. An `action` node
+will invoke any `action in` flow segment across the system, regardless of where
+they are defined (within subflows or other tabs). Flows will be invoked if the
+`action in` node's name begins with the name of the corresponding `action` node.
+Use the global scope to allow other developers to extend a flow on their own tab
+or without having to modify an existing flow no matter where it is located
+(i.e. deep within a subflows). Placing a group of global ActionFlows within a
+subflow is an easy way to distribute modular behaviors or add vendor specific
+functionality.
 
-### Private flows
-Use the private flow checkbox to limit this <code>action in</code> node's
-flow to `action` nodes calling from within the same tab or within the
-same subflow. Uncheck to allow actions to invoke the `action in` node
-from other tabs or subflows (where the `action` node's own private
-checkbox is unchecked.
+#### protected
+Using the "protected" scope setting for ActionFlows allows you to group
+functionality while avoiding conflicts with common names that could occur with
+global scope. Unlike global scope, protected scope restricts `action` and
+corresponding `action in` nodes to the same tab. Furthermore, protected scope
+places restrictions on accessing ActionFlows within a subflow; you may still
+access them but must first declare a prefix that is the subflow's name. This
+allows you to work with multiple subflows as **object instances** in a similar
+fashion that OOP developers use classes and objects with public or private
+methods.
 
-![ActionFlows Private Setting](/actionflows/demo/private.png?raw=true "ActionFlows Private Setting")
 
-## Advanced
-The nodes used in ActionFlows keep their priority, private settings, and names
-associations within the global property "actionflows" (`global.actionflows`).
-The variable contains a list of `action` nodes and their associated `action in`
-nodes within a property called `ins`, arranged by priority order.
+![ActionFlows Scope: Protected](/actionflows/demo/protected.jpg?raw=true "ActionFlows Scope: Protected")
 
-During runtime of an `action in/out` segment, a `msg._af` property variable is
-present that determines the calling `action` node to return to after running
-the sequential segments. In addition, any nested flows will be held within the
-`msg._asf['stack']` property. The `msg._af` property is destroyed after the
-flows exit the parent `action` node.
+ActionFlows can address other ActionFlows within subflows using an explicit
+prefix to identify the subflow location of other ActionFlows nodes. The prefix
+is the name of the subflow where the corresponding `action` or `action in` node
+exists. In the screenshot above we have two examples:
 
-By manipulating the ActionFlows global and `msg._af` properties, you can changed
-the runtime behavior of ActionFlows (i.e. such as override, replace, or disable
-`action in/out` flow segments).
+*An example of an `action` node calling a flow segment defined outside the subflow.*
+1a) The subflow is defined on the tab with the name "acme", it is invoked with
+an injector supplying the string "Hello".
+1b) The injector activates the subflow's `action` node named "action".
+1c) The flow segment outside the subflow is found by the name `acme.action`
+because the `action in` node's name starts with the subflow name and the
+`action` node's name within it "action".
+
+The flow segment contains a change node that alters the "Hello string" and
+changes it to "Hi".
+
+
+*An example of a flow segment defined inside a subflow and accessed from outside.*
+2a) The `action` node named "acme.sample in" finds the defined flow segment
+inside the subflow named "acme".
+2b) Within the "acme" subflow is the `action in` node named "sample".
+
+The flow segment has a change node that changes the injector's "Hello"
+string to "Good bye".
+
+[Download the Protected Scope example flow here.](/actionflows/demo/protected.json)
+
+The following namespace-like rules apply to using ActionFlows with "protected"
+scope inside of subflows:
+
+* Both `action` and `action in` names must match within a subflow. I.e. an
+`action` named "sample" will invoke any `action in` beginning with the name
+"sample". The subflow name as a prefix is not necessary from inside the subflow.
+* ActionFlows defined outside of the subflow must declare the subflow name as
+apart of the prefix. For example, an `action` node named "apple" within
+a subflow named "fruits" could invoke an `action in` node at the tab level if
+the `action in` node's name begins with the subflow name, i.e. "fruits.apple".
+Likewise, sub-subflows (subflows that exist within subflows) would require
+additional prefixes to address the innermost node.
+* Protected scope nodes can only invoke one another within the same tab.
+
+#### private
+Private flows are useful if your actions have a commonly used name and/or you
+wish to restrict extendability to within a subflow or tab. Unlike protected
+scope, private scope inhibits the ability to invoke or respond to ActionFlows
+that are defined outside of the given subflow or tab where the ActionFlows
+exists. Using private scope helps avoid naming conflicts but prevents
+extensibility.
+
+### Mixed Scope Modes
+Note that both `action` and `action in` nodes have a scope setting. For example
+within a subflow, a global scope `action` next to private scope `action in` will
+have a unique ability; this pattern ensures that the internal private
+`action in` is always invoked once within the subflow and only for that subflow
+instance. Any other `action in` nodes of the same name elsewhere could also be
+called but the internal `action in` can never be invoked from other instances
+of the subflow.
+
+### Scope Icons
+Scope settings are reflected in the ActionFlows node icons. The icons for
+`action in` nodes, `action` nodes (in single or loop mode) will depict a small
+"hint" icon in the upper right hand corner to indicate the scope setting.
+
+![Scope Hint Icons](/actionflows/demo/scope-icons.jpg?raw=true "Scope Hint Icons")
+
+## ActionFlows and JavaScript
+TBD
+
+### Reserved Action Name
+TBD
 
 ## Installation
 Run the following command in your Node-RED user directory (typically ~/.node-red):

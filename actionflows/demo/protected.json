@@ -1,0 +1,258 @@
+[
+    {
+        "id": "731ca76d.99d86",
+        "type": "subflow",
+        "name": "Subflow 1",
+        "info": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "a1dc2a36.c01f1"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 360,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "a1dc2a36.c01f1",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "a1dc2a36.c01f1",
+        "type": "actionflows",
+        "z": "731ca76d.99d86",
+        "info": "Describe your action API here.",
+        "untilproptype": "num",
+        "proptype": "msg",
+        "name": "action",
+        "prop": "loop",
+        "untilprop": 0,
+        "until": "gt",
+        "loop": "none",
+        "scope": "protected",
+        "perf": false,
+        "seq": false,
+        "x": 210,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fb673af4.031d08",
+        "type": "actionflows_in",
+        "z": "731ca76d.99d86",
+        "name": "sample in",
+        "priority": "50",
+        "links": [],
+        "scope": "protected",
+        "x": 80,
+        "y": 100,
+        "wires": [
+            [
+                "6e7d3d1c.9e7d8c"
+            ]
+        ]
+    },
+    {
+        "id": "3cd3cc10.a2af74",
+        "type": "actionflows_out",
+        "z": "731ca76d.99d86",
+        "name": "sample out",
+        "links": [],
+        "x": 310,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "6e7d3d1c.9e7d8c",
+        "type": "change",
+        "z": "731ca76d.99d86",
+        "name": "Good Bye",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "Hello",
+                "fromt": "str",
+                "to": "Good Bye",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "3cd3cc10.a2af74"
+            ]
+        ]
+    },
+    {
+        "id": "a4961f0.0259be",
+        "type": "inject",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "topic": "",
+        "payload": "Hello",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 90,
+        "y": 60,
+        "wires": [
+            [
+                "870ba6ce.41ddd8"
+            ]
+        ]
+    },
+    {
+        "id": "7d8d4fa.9c729b",
+        "type": "debug",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 350,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "870ba6ce.41ddd8",
+        "type": "subflow:731ca76d.99d86",
+        "z": "3082c225.0a2e3e",
+        "name": "acme",
+        "x": 210,
+        "y": 60,
+        "wires": [
+            [
+                "7d8d4fa.9c729b"
+            ]
+        ]
+    },
+    {
+        "id": "3932ab9c.e373b4",
+        "type": "actionflows_in",
+        "z": "3082c225.0a2e3e",
+        "name": "acme.action in",
+        "priority": "50",
+        "links": [],
+        "scope": "protected",
+        "x": 100,
+        "y": 120,
+        "wires": [
+            [
+                "98d3cc88.c018a"
+            ]
+        ]
+    },
+    {
+        "id": "883afce3.bd66c",
+        "type": "actionflows_out",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "links": [],
+        "x": 440,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "98d3cc88.c018a",
+        "type": "change",
+        "z": "3082c225.0a2e3e",
+        "name": "Hi",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Hi",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 270,
+        "y": 120,
+        "wires": [
+            [
+                "883afce3.bd66c"
+            ]
+        ]
+    },
+    {
+        "id": "cc99b5ee.3d4c1",
+        "type": "inject",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "topic": "",
+        "payload": "Hello",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "6e263db3.b5a434"
+            ]
+        ]
+    },
+    {
+        "id": "e1a87ea6.573b68",
+        "type": "debug",
+        "z": "3082c225.0a2e3e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 450,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "6e263db3.b5a434",
+        "type": "actionflows",
+        "z": "3082c225.0a2e3e",
+        "info": "Describe your action API here.",
+        "untilproptype": "num",
+        "proptype": "msg",
+        "name": "acme.sample in",
+        "prop": "loop",
+        "untilprop": 0,
+        "until": "gt",
+        "loop": "none",
+        "scope": "protected",
+        "perf": false,
+        "seq": false,
+        "x": 260,
+        "y": 180,
+        "wires": [
+            [
+                "e1a87ea6.573b68"
+            ]
+        ]
+    }
+]
