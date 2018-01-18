@@ -294,21 +294,21 @@ is the name of the subflow where the corresponding `action` or `action in` node
 exists. In the screenshot above we have two examples:
 
 **An example of an `action` node calling a flow segment defined outside the subflow.**
-1a) The subflow is defined on the tab with the name "acme", it is invoked with
+  1a) The subflow is defined on the tab with the name "acme", it is invoked with
 an injector supplying the string "Hello".
-1b) The injector activates the subflow's `action` node named "action".
-1c) The flow segment outside the subflow is found by the name `acme.action`
+  1b) The injector activates the subflow's `action` node named "action".
+  1c) The flow segment outside the subflow is found by the name `acme.action`
 because the `action in` node's name starts with the subflow name and the
 `action` node's name within it "action".
 
-The flow segment contains a change node that alters the "Hello string" and
-changes it to "Hi".
+The flow segment contains a change node that alters the "Hello" and changes it
+to "Hi".
 
 
 **An example of a flow segment defined inside a subflow and accessed from outside.**
-2a) The `action` node named "acme.sample in" finds the defined flow segment
+  2a) The `action` node named "acme.sample in" finds the defined flow segment
 inside the subflow named "acme".
-2b) Within the "acme" subflow is the `action in` node named "sample".
+  2b) Within the "acme" subflow is the `action in` node named "sample".
 
 The flow segment has a change node that changes the injector's "Hello"
 string to "Good bye".
@@ -380,20 +380,20 @@ The `actionflows` global object contains the following methods and properties of
 interest:
 
 ### Methods
-**invoke** Invokes any matching `action in` nodes with the name found in the
+**invoke** - Invokes any matching `action in` nodes with the name found in the
 first parameter. The second parameter should be the `msg` object to be passed
 into the flow segment. A promise object is returned with a single incoming
 parameter containing the returned `msg` object. Note: the invoke method ignores
 scope settings and can be used to invoke any `action in` node by name.
 
-**map** The map method processes all the found `action` and `action in` nodes
+**map** - The map method processes all the found `action` and `action in` nodes
 and builds an associative map. This method is called once internally at
 deployment and determines the order in which each `action in` node is called
 for it's corresponding `action` node. The results are updated in the `actions`
 property (see below).
 
 ### Properties
-**actions** An object containing the calculated associative map from the `map`
+**actions** - An object containing the calculated associative map from the `map`
 method (defined above) that is used internally by ActionFlows. The map is a list
 of enabled `action` node instances with a special `ins` property containing
 corresponding, `action in` node instances based on their priority and scope
@@ -402,14 +402,14 @@ runtime. Editing this list will alter the ActionFlows behavior (use with
 caution). The object can be reset by recalling the `map` method or re-deploying
 to restore the original design-time flow settings.
 
-**afs** An object containing all the `action` nodes in the system. This property
+**afs** - An object containing all the `action` nodes in the system. This property
 is used internally by the `map` method to determine the runtime behavior of
 ActionFlows. Altering this list prior to calling the `map` method will
 permanently change the runtime behavior of ActionFlows. Alteration is not
 recommended as this will disable the ability to reset the behavior until
 re-deployment.
 
-**ins** An object containing all the `action in` nodes in the system. This
+**ins** - An object containing all the `action in` nodes in the system. This
 property is used internally by the `map` method to determine the runtime
 behavior of ActionFlows. Altering this list prior to calling the `map` method
 will permanently change the runtime behavior of ActionFlows. Alteration is not
