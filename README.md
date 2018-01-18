@@ -423,7 +423,7 @@ Currently, ActionFlows has only one reserved `action in` node name:
 #deployed
 ```
 Any `action in` nodes that start with `#deployed` in their name will be invoked
-at deployment. This would be the equivalent of paring an inject node with the
+at deployment. This would be the equivalent of pairing an inject node with the
 option for "Inject once at start" set to invoke a flow segment defined by
 ActionFlows.
 
