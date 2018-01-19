@@ -580,6 +580,12 @@ module.exports = function(RED) {
       });
       if (ains.length > 0) {
         callActionIn();
+      }else{
+        RED.events.removeListener(event, handler);
+        if (msg._af["stack"].length == 0) {
+          delete msg._af;
+        }
+        done(msg);
       }
       function callActionIn() {
         msg._af["stack"].push(event);
