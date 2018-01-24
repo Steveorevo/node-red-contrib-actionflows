@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-actionflows",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Create extendable, loopable, and reusable design patterns for flows.",
   "author": "Stephen J. Carnam <steveorevo@gmail.com>",
   "license": "MIT",
