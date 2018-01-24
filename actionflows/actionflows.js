@@ -55,6 +55,11 @@ module.exports = function(RED) {
         return;
       }
 
+      if (typeof msg._af == "undefined") {
+        msg._af = {};
+        msg._af.stack = [];
+      }
+
       // Check loop conditional
       if (stopLoop()) {
         // Move on
@@ -64,10 +69,6 @@ module.exports = function(RED) {
         node.status({});
         node.send(msg);
         return;
-      }
-      if (typeof msg._af == "undefined") {
-        msg._af = {};
-        msg._af.stack = [];
       }
       if (typeof msg._af[config.id] == "undefined") {
         msg._af[config.id] = actions[config.id];
