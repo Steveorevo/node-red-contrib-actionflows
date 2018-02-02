@@ -595,6 +595,7 @@ module.exports = function(RED) {
         var ain_node = ains.shift();
         if (sName == "#deployed") {
           msg.payload = Object.assign({}, getParent(ain_node));
+          msg.settings = Object.assign({}, RED.settings);
         }
         RED.events.emit("af:" + ain_node.id, msg);
       }
