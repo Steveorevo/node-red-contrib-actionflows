@@ -24,6 +24,7 @@ module.exports = function(RED) {
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
       af = new Object();
+      af["actions"] = new Object();
       af["afs"] = new Object();
       af["ins"] = new Object();
     }
@@ -266,6 +267,7 @@ module.exports = function(RED) {
     var af = node.context().global.get('actionflows');
     if (typeof af == "undefined") {
       af = new Object();
+      af["actions"] = new Object();
       af["afs"] = new Object();
       af["ins"] = new Object();
     }
