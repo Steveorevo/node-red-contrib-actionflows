@@ -433,7 +433,9 @@ msg.payload object property that references the *parent container* the
 ![#deployed Event](/actionflows/demo/deployed.jpg?raw=true "#deployed Event")
 
 This feature can be used to obtain the subflow instance name should you require
-a reference to it within your subflow object instance.
+a reference to it within your subflow object instance. In addition, the Node-RED
+runtime instance's settings are exposed in `msg.settings` allowing your flows to
+know the uiPort, settingsFile folder, httpRoot, etc.
 
 [Download the #deployed event example flow here.](/actionflows/demo/deployed.json)
 
