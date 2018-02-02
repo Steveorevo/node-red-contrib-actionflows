@@ -1,5 +1,8 @@
 module.exports = function(RED) {
+  // var RED2 = require.main.require('node-red');
+  // console.log("line 3");
   RED.nodes.registerType("actionflows", actionflows);
+
   function actionflows(config) {
     var node = this;
 
@@ -31,8 +34,18 @@ module.exports = function(RED) {
     if (typeof af["map"] == "undefined") {
       af["map"] = function(e) {
         if (e.id == "runtime-state") {
-          purge(node);
-          map(node);
+          var mapTO = false;
+          var flows = [];
+          RED.nodes.eachNode(function(cb){
+            flows.push(Object.assign({}, cb));
+            if (mapTO) {
+              clearTimeout(mapTO);
+            }
+            mapTO = setTimeout(function(){
+              purge(node);
+              map(node, flows);
+            }, 500);
+          });
         }
       }
       RED.events.on("runtime-event", af["map"]);
@@ -274,8 +287,18 @@ module.exports = function(RED) {
     if (typeof af["map"] == "undefined") {
       af["map"] = function(e) {
         if (e.id == "runtime-state") {
-          purge(node);
-          map(node);
+          var mapTO = false;
+          var flows = [];
+          RED.nodes.eachNode(function(cb){
+            flows.push(Object.assign({}, cb));
+            if (mapTO) {
+              clearTimeout(mapTO);
+            }
+            mapTO = setTimeout(function(){
+              purge(node);
+              map(node, flows);
+            }, 500);
+          });
         }
       }
       RED.events.on("runtime-event", af["map"]);
@@ -317,11 +340,9 @@ module.exports = function(RED) {
     node.context().global.set('actionflows', af);
   }
   // Map actionflows with `action in` assocations on scope settings
-  function map(node) {
+  function map(node, flows) {
     // Separate our actions from our ins
     var af = node.context().global.get("actionflows");
-    var RED2 = require.main.require('node-red');
-    var flows = RED2.nodes.getFlows().flows;
     var afs_object = af["afs"];
     var ins_object = af["ins"];
 
@@ -565,7 +586,7 @@ module.exports = function(RED) {
         msg._af.stack = [];
       }
       var done;
-      var event = "af:" + RED2.util.generateId();
+      var event = "af:" + RED.util.generateId();
       var handler = function(msg) {
         if (ains.length > 0) {
           callActionIn();
