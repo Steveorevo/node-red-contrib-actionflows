@@ -215,6 +215,8 @@ module.exports = function(RED) {
 
       // Decode typeInput value by type/value
       function getTypeInputValue(t, v) {
+        var globalContext = node.context().global;
+        var flowContext = node.context().flow;
         var r = '';
         switch(t) {
           case "msg":
@@ -253,9 +255,11 @@ module.exports = function(RED) {
               RED.util.setMessageProperty(msg, property, value);
               break;
             case "flow":
+              var flowContext = node.context().flow;
               flowContext.set(property, value);
               break;
             case "global":
+              var globalContext = node.context().global;
               globalContext.set(property, value);
               break;
           }
