@@ -329,6 +329,11 @@ Likewise, sub-subflows (subflows that exist within subflows) would require
 additional prefixes to address the innermost node.
 * Protected scope nodes can only invoke one another within the same tab.
 
+```
+Note: Changing the name of a subflow may require a "Full Deploy" to update
+ActionFlows' internal namespace map changes.
+```
+
 #### private
 Private flows are useful if your actions have a commonly used name and/or you
 wish to restrict extendability to within a subflow or tab. Unlike protected
