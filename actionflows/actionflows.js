@@ -1,7 +1,5 @@
 module.exports = function(RED) {
-  RED.nodes.registerType("actionflows", actionflows);
-  
-  //console.log(RED.settings.functionGlobalContext.get("af"));
+  RED.nodes.registerType("actionflows", actionflows);  
   function actionflows(config) {
     var node = this;
 
@@ -21,10 +19,6 @@ module.exports = function(RED) {
         RED.events.removeListener(event, handler);
         node.status({});
     });
-
-    // Do mapping
-    //runtimeMap();
-
     this.on("input", function(msg) {
 
       // Check no matching `action in`s, just move along
@@ -252,10 +246,6 @@ module.exports = function(RED) {
     this.on("close",function() {
         RED.events.removeListener(event, handler);
     });
-    
-    // Do mapping
-    //runtimeMap();
-
     this.on("input", function(msg) {
         this.send(msg);
     });
@@ -272,10 +262,6 @@ module.exports = function(RED) {
   }
 
   // Map actionflows with `action in` assocations on scope settings
-
-
-  // Perform runtime mapping when project loaded, changes, deployed
-  //var runtimeMapTO = false;
   function runtimeMap(e) {
     if ("runtime-deploy" != e.id) return;
 
@@ -289,13 +275,6 @@ module.exports = function(RED) {
       af["actions"] = new Object();
       af["afs"] = new Object();
       af["ins"] = new Object();
-      //node.context().global.set('actionflows', af);
-      
-      // Collect all node information when ready
-      // if (runtimeMapTO) {
-      //   clearTimeout(runtimeMapTO);
-      // }
-      //runtimeMapTO = setTimeout(function() {
       var flows = [];
       RED.nodes.eachNode(function(cb) {
         flows.push(Object.assign({}, cb));
@@ -329,8 +308,6 @@ module.exports = function(RED) {
       }
 
       // Separate our actions from our ins
-      //var af = node.context().global.get("actionflows");
-      //var af = RED.settings.functionGlobalContext.get("actionflows");
       var afs_object = af["afs"];
       var ins_object = af["ins"];
       for (var f = 0; f < flows.length; f++) {
@@ -435,7 +412,6 @@ module.exports = function(RED) {
       af["invoke"] = invokeActionIn;
       af["actions"] = actions;
       af["map"] = map;
-      //node.context().global.set('actionflows', af);
       RED.settings.functionGlobalContext.set("actionflows", af);
 
       // Return the parent (tab or subflow) of the given item or false
