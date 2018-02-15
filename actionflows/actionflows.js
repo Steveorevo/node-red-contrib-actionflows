@@ -610,6 +610,6 @@ module.exports = function(RED) {
       }
       // Perform mapping
       map(node, flows);
-    }, 500);
+    }, 100);
   }
 }
