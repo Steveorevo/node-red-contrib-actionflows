@@ -21,36 +21,6 @@ module.exports = function(RED) {
         node.status({});
     });
 
-    // Create our global context actionflows object for mapping details
-    var af = node.context().global.get('actionflows');
-    if (typeof af == "undefined") {
-      af = new Object();
-      af["actions"] = new Object();
-      af["afs"] = new Object();
-      af["ins"] = new Object();
-    }
-    if (typeof af["map"] == "undefined") {
-      af["map"] = function(e) {
-        if (e.id == "runtime-state") {
-          var mapTO = false;
-          var flows = [];
-          RED.nodes.eachNode(function(cb){
-            flows.push(Object.assign({}, cb));
-            if (mapTO) {
-              clearTimeout(mapTO);
-            }
-            mapTO = setTimeout(function(){
-              purge(node);
-              map(node, flows);
-            }, 500);
-          });
-        }
-      }
-      RED.events.on("runtime-event", af["map"]);
-    }
-    af["afs"][config.id] = config;
-    af["map"] = map;
-    node.context().global.set('actionflows', af);
     this.on("input", function(msg) {
 
       // Check no matching `action in`s, just move along
@@ -278,36 +248,6 @@ module.exports = function(RED) {
     this.on("close",function() {
         RED.events.removeListener(event, handler);
     });
-    // Create our global context actionflows object for mapping details
-    var af = node.context().global.get('actionflows');
-    if (typeof af == "undefined") {
-      af = new Object();
-      af["actions"] = new Object();
-      af["afs"] = new Object();
-      af["ins"] = new Object();
-    }
-    if (typeof af["map"] == "undefined") {
-      af["map"] = function(e) {
-        if (e.id == "runtime-state") {
-          var mapTO = false;
-          var flows = [];
-          RED.nodes.eachNode(function(cb){
-            flows.push(Object.assign({}, cb));
-            if (mapTO) {
-              clearTimeout(mapTO);
-            }
-            mapTO = setTimeout(function(){
-              purge(node);
-              map(node, flows);
-            }, 500);
-          });
-        }
-      }
-      RED.events.on("runtime-event", af["map"]);
-    }
-    // Save details
-    af["ins"][config.id] = config;
-    node.context().global.set('actionflows', af);
     this.on("input", function(msg) {
         this.send(msg);
     });
