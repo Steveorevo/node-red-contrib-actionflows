@@ -1,6 +1,4 @@
 module.exports = function(RED) {
-  // var RED2 = require.main.require('node-red');
-  // console.log("line 3");
   RED.nodes.registerType("actionflows", actionflows);
 
   function actionflows(config) {
