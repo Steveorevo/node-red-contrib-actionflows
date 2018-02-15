@@ -21,6 +21,9 @@ module.exports = function(RED) {
         node.status({});
     });
 
+    // Do mapping
+    runtimeMap(node);
+
     this.on("input", function(msg) {
 
       // Check no matching `action in`s, just move along
@@ -248,6 +251,10 @@ module.exports = function(RED) {
     this.on("close",function() {
         RED.events.removeListener(event, handler);
     });
+    
+    // Do mapping
+    runtimeMap(node);
+
     this.on("input", function(msg) {
         this.send(msg);
     });
@@ -262,31 +269,23 @@ module.exports = function(RED) {
       }
 		});
   }
-  // Purge flows from prior deployment
-  function purge(node) {
-    var af = node.context().global.get("actionflows");
-    var afs_object = af["afs"];
-    for (var id in afs_object) {
-      if (afs_object[id].mapped == true) {
-        delete afs_object[id];
-      }
-    }
-    var ins_object = af["ins"];
-    for (var id in ins_object) {
-      if (ins_object[id].mapped == true) {
-        delete ins_object[id];
-      }
-    }
-    af["afs"] = afs_object;
-    af["ins"] = ins_object;
-    node.context().global.set('actionflows', af);
-  }
+
   // Map actionflows with `action in` assocations on scope settings
   function map(node, flows) {
     // Separate our actions from our ins
     var af = node.context().global.get("actionflows");
     var afs_object = af["afs"];
     var ins_object = af["ins"];
+    for (var f = 0; f < flows.length; f++) {
+      if (flows[f].type == "actionflows") {
+        afs_object[flows[f].id] = flows[f];
+      }
+      if (flows[f].type == "actionflows_in") {
+        ins_object[flows[f].id] = flows[f];
+      }
+    }
+    af["afs"] = afs_object;
+    af["ins"] = ins_object;
 
     // Purge `action`s on disabled tabs
     for (var id in afs_object) {
@@ -296,8 +295,6 @@ module.exports = function(RED) {
       }else{
         afs_object[id].ins = [];
       }
-      // Mark for mapped
-      afs_object[id].mapped = true;
     }
 
     // Purge `action in`s on disabled tabs
@@ -306,8 +303,6 @@ module.exports = function(RED) {
       if (t == false || t.disabled == true) {
         delete ins_object[id];
       }
-      // Mark for mapped
-      ins_object[id].mapped = true;
     }
 
     // Build associations between actions and their matching ins
@@ -387,6 +382,7 @@ module.exports = function(RED) {
     }
     af["invoke"] = invokeActionIn;
     af["actions"] = actions;
+    af["map"] = map;
     node.context().global.set('actionflows', af);
 
     // Return the parent (tab or subflow) of the given item or false
@@ -565,5 +561,55 @@ module.exports = function(RED) {
       return p;
     }
     invokeActionIn("#deployed", {payload:""});
+  }
+
+  // Perform runtime mapping when project loaded, changes, deployed
+  var runtimeMapTO = false;
+  function runtimeMap(node) {
+
+    // Init mapping variables right away
+    var af = node.context().global.get('actionflows');
+    af = new Object();
+    af["actions"] = new Object();
+    af["afs"] = new Object();
+    af["ins"] = new Object();
+    node.context().global.set('actionflows', af);
+    
+    // Collect all node information when ready
+    if (runtimeMapTO) {
+      clearTimeout(runtimeMapTO);
+    }
+    runtimeMapTO = setTimeout(function() {
+      var flows = [];
+      RED.nodes.eachNode(function(cb) {
+        flows.push(Object.assign({}, cb));
+  
+        // Collect instances too
+        if (cb.type.startsWith("subflow:")) {
+          let inst = RED.nodes.getNode(cb.id).instanceNodes;
+          for(var id in inst) {
+            if (inst[id].type.startsWith("actionflows")) {
+              flows.push(Object.assign({}, inst[id]));
+            }
+          }
+        }
+      });
+      
+      // Merge alias with original object properties
+      for(x in flows) {
+        if (flows[x].type.startsWith("actionflows")) {
+          if (typeof flows[x]._alias != "undefined") {
+            for(y in flows) {
+              if (flows[x]._alias == flows[y].id) {
+                flows[x] = Object.assign(Object.assign({}, flows[y]), flows[x]);
+                break;
+              }
+            }
+          }
+        }
+      }
+      // Perform mapping
+      map(node, flows);
+    }, 500);
   }
 }
