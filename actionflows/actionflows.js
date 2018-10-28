@@ -262,8 +262,7 @@ module.exports = function(RED) {
   }
 
   // Map actionflows with `action in` assocations on scope settings
-  function runtimeMap(e) {
-    if ("runtime-deploy" != e.id) return;
+  function runtimeMap() {
 
     // Init mapping variables right away
     function map() {
@@ -593,5 +592,5 @@ module.exports = function(RED) {
     } // end function map()
     map();
   }
-  RED.events.on("runtime-event", runtimeMap);
+  RED.events.on("nodes-started", runtimeMap);
 }
