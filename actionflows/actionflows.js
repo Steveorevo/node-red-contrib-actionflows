@@ -282,7 +282,8 @@ module.exports = function(RED) {
         if (cb.type.startsWith("subflow:")) {
           let sub = RED.nodes.getNode(cb.id);
           if (sub != null) {
-            let inst = sub.instanceNodes;
+            let inst = sub.hasOwnProperty('instanceNodes')? sub.instanceNodes: // prior to nodered 0.20
+                sub.hasOwnProperty('_flow')? sub._flow.activeNodes:undefined;
             for(var id in inst) {
               if (inst[id].type.startsWith("actionflows")) {
                 flows.push(Object.assign({}, inst[id]));
@@ -472,8 +473,9 @@ module.exports = function(RED) {
         items.forEach(function(f) {
           var sub = RED.nodes.getNode(f.id);
           if (sub != null) {
-            if (typeof sub.instanceNodes != "undefined") {
-              var inst = sub.instanceNodes;
+            var inst = sub.hasOwnProperty('instanceNodes')? sub.instanceNodes: // prior to nodered 0.20
+                sub.hasOwnProperty('_flow')? sub._flow.activeNodes:undefined;
+            if (typeof inst != "undefined") {
               for(var id in inst) {
                 if (id != f.id) {
                   var subsub = Object.assign({}, inst[id]);
