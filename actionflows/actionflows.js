@@ -1,5 +1,5 @@
 module.exports = function(RED) {
-  RED.nodes.registerType("actionflows", actionflows);  
+  RED.nodes.registerType("actionflows", actionflows);
   function actionflows(config) {
     var node = this;
 
@@ -282,7 +282,7 @@ module.exports = function(RED) {
         if (cb.type.startsWith("subflow:")) {
           let sub = RED.nodes.getNode(cb.id);
           if (sub != null) {
-            let inst = sub.instanceNodes;
+            let inst = instanceNodesForSub(sub);
             for(var id in inst) {
               if (inst[id].type.startsWith("actionflows")) {
                 flows.push(Object.assign({}, inst[id]));
@@ -291,7 +291,7 @@ module.exports = function(RED) {
           }
         }
       });
-        
+
       // Merge alias with original object properties
       for(x in flows) {
         if (flows[x].type.startsWith("actionflows")) {
@@ -472,8 +472,8 @@ module.exports = function(RED) {
         items.forEach(function(f) {
           var sub = RED.nodes.getNode(f.id);
           if (sub != null) {
-            if (typeof sub.instanceNodes != "undefined") {
-              var inst = sub.instanceNodes;
+            var inst = instanceNodesForSub(sub);
+            if (typeof inst != "undefined") {
               for(var id in inst) {
                 if (id != f.id) {
                   var subsub = Object.assign({}, inst[id]);
@@ -592,5 +592,25 @@ module.exports = function(RED) {
     } // end function map()
     map();
   }
+
+  function instanceNodesForSub(sub) {
+    if(sub.hasOwnProperty('instanceNodes')) {
+      return sub.instanceNodes; // Compatibility with Node-RED 0.19
+    }
+    if(sub.hasOwnProperty('_flow') && sub._flow.activeNodes) {
+      const allNodes = {};
+      allNodes[sub.id] = sub;
+      for(const nodeId in sub._flow.activeNodes) {
+        const node = sub._flow.activeNodes[nodeId];
+        allNodes[node.id] = node;
+        if(node.type.startsWith('subflow:')) {
+          Object.assign(allNodes, instanceNodesForSub(node));
+        }
+      }
+      return allNodes;
+    }
+    return {};
+  }
+
   RED.events.on("nodes-started", runtimeMap);
 }
