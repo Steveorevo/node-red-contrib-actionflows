@@ -263,6 +263,89 @@ module.exports = function(RED) {
 
   // Map actionflows with `action in` assocations on scope settings
   function runtimeMap() {
+    const actionflowsNodes = {};
+    const actionflowsInNodes = {};
+    const actionflowsOutNodes = {};
+    const allActionFlowsNodes = {};
+
+    const actionflowsInstanceNodes = {};
+    const actionflowsInInstanceNodes = {};
+    const actionflowsOutInstanceNodes = {};
+    const allActionFlowsInstances = {};
+    const allActionFlowsInstancesInSubflowInstancesCopy = {};
+
+    const allNodesCopy = {};
+    const workspaces = {};
+    const subflows = {};
+    const subflowInstancesDefOnlyCopy = {};
+
+    (function mapNodes() {
+      RED.nodes.eachNode(node=>{
+        allNodesCopy[node.id] = Object.assign({}, node);
+        if(node.type === 'tab') {
+          workspaces[node.id] = node;
+        } else if(node.type === 'subflow') {
+          subflows[node.id] = node;
+        } else if(node.type === 'actionflows') {
+          actionflowsNodes[node.id] = node;
+          const instNode = RED.nodes.getNode(node.id);
+          if(instNode) {
+            actionflowsInstanceNodes[node.id] = instNode;
+          }
+        } else if(node.type === 'actionflows_in') {
+          actionflowsInNodes[node.id] = node;
+          const instNode = RED.nodes.getNode(node.id);
+          if(instNode) {
+            actionflowsInInstanceNodes[node.id] = instNode;
+          }
+        } else if(node.type === 'actionflows_out') {
+          actionflowsOutNodes[node.id] = node;
+          const instNode = RED.nodes.getNode(node.id);
+          if(instNode) {
+            actionflowsOutInstanceNodes[node.id] = instNode;
+          }
+        } else if(node.type.startsWith('subflow:')) {
+          const subflowInst = RED.nodes.getNode(node.id);
+          if(subflowInst) {
+            const instances = instanceNodesForSub(subflowInst);
+            for(const instId in instances) {
+              const inst = instances[instId];
+              if(inst.type.startsWith('actionflows')) {
+                allActionFlowsInstancesInSubflowInstancesCopy[instId] = Object.assign({},inst);
+              } else if(inst.type.startsWith("subflow:")) {
+
+                let subflowName;
+                try {
+                  subflowName = inst._flow.subflowDef.name; // new Node-RED versions
+                } catch (e) {
+                  subflowName = subflows[inst.type.substring(8)].name; // Node-RED 19 or less
+                }
+
+                subflowInstancesDefOnlyCopy[inst.id] = {
+                  name: subflowName,
+                  type: inst.type,
+                  id: inst.id,
+                  z: inst.z
+                }
+              }
+            }
+          }
+        }
+      });
+
+      Object.assign(allActionFlowsInstances, {
+        ...actionflowsInstanceNodes,
+        ...actionflowsInInstanceNodes,
+        ...actionflowsOutInstanceNodes,
+        ...allActionFlowsInstancesInSubflowInstancesCopy
+      });
+
+      Object.assign(allActionFlowsNodes, {
+        ...actionflowsNodes,
+        ...actionflowsInNodes,
+        ...actionflowsOutNodes,
+      });
+    })();
 
     // Init mapping variables right away
     function map() {
@@ -274,94 +357,52 @@ module.exports = function(RED) {
       af["actions"] = new Object();
       af["afs"] = new Object();
       af["ins"] = new Object();
-      var flows = [];
-      RED.nodes.eachNode(function(cb) {
-        flows.push(Object.assign({}, cb));
-
-        // Collect instances too
-        if (cb.type.startsWith("subflow:")) {
-          let sub = RED.nodes.getNode(cb.id);
-          if (sub != null) {
-            let inst = instanceNodesForSub(sub);
-            for(var id in inst) {
-              if (inst[id].type.startsWith("actionflows")) {
-                flows.push(Object.assign({}, inst[id]));
-              }
-            }
-          }
-        }
-      });
+      const actionflowsMap = {...allActionFlowsNodes, ...allActionFlowsInstancesInSubflowInstancesCopy}
 
       // Merge alias with original object properties
-      for(x in flows) {
-        if (flows[x].type.startsWith("actionflows")) {
-          if (typeof flows[x]._alias != "undefined") {
-            for(y in flows) {
-              if (flows[x]._alias == flows[y].id) {
-                flows[x] = Object.assign(Object.assign({}, flows[y]), flows[x]);
-                break;
-              }
-            }
-          }
-        }
+      for(const id in allActionFlowsInstancesInSubflowInstancesCopy) {
+        const nodeInst = allActionFlowsInstancesInSubflowInstancesCopy[id];
+        const originalNodeObj = allNodesCopy[nodeInst._alias];
+        actionflowsMap[id] = Object.assign(Object.assign({}, originalNodeObj), nodeInst);
       }
 
       // Separate our actions from our ins
       var afs_object = af["afs"];
       var ins_object = af["ins"];
-      for (var f = 0; f < flows.length; f++) {
-        if (flows[f].type == "actionflows") {
-          afs_object[flows[f].id] = flows[f];
+      for (const nodeId in actionflowsMap) {
+        const node = actionflowsMap[nodeId];
+        const tabFound = findTab(node);
+
+        // Purge `action`s on disabled tabs
+        if(!tabFound || tabFound.disabled) continue;
+
+        if (node.type === "actionflows") {
+          node.ins = [];
+          afs_object[node.id] = node;
         }
-        if (flows[f].type == "actionflows_in") {
-          ins_object[flows[f].id] = flows[f];
-        }
-      }
-      af["afs"] = afs_object;
-      af["ins"] = ins_object;
-      // Purge `action`s on disabled tabs
-      for (var id in afs_object) {
-        var t = findTab(afs_object[id]);
-        if (t == false || t.disabled == true) {
-          delete afs_object[id];
-        }else{
-          afs_object[id].ins = [];
+        if (node.type === "actionflows_in") {
+          ins_object[node.id] = node;
         }
       }
-      // Purge `action in`s on disabled tabs
-      for (var id in ins_object) {
-        var t = findTab(ins_object[id]);
-        if (t == false || t.disabled == true) {
-          delete ins_object[id];
-        }
-      }
+
       // Build associations between actions and their matching ins
       var actions = Object.assign({}, afs_object);
       for (var id in actions) {
         var a = actions[id];
         var ins = Object.assign({}, ins_object);
-        // Match actionflows on same z plane, regardless of scope
         for (var id in ins) {
           var i = ins[id];
-          if (i.z == a.z) {
+          if (
+              i.z == a.z || // Match actionflows on same z plane, regardless of scope
+              (a.scope == "global" && i.scope == "global" && !i._alias) // Match any global actionflows, but dissallow global calls to be received in actionflow_in(s) that are within subflows
+          ) {
             if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
               a.ins.push(i);
               delete ins[id];
             }
           }
         }
-        // Match any global actionflows
-        if (a.scope == "global") {
-          for (var id in ins) {
-            var i = ins[id];
-            if (i.scope == "global") {
-              if (prefixMatch(i.name).startsWith(prefixMatch(a.name))) {
-                a.ins.push(i);
-                delete ins[i];
-              }
-            }
-          }
-        }
+
         // Match protected actionflows to explicitly named ins
         if (a.scope == "protected") {
           var name = a.name;
@@ -415,125 +456,43 @@ module.exports = function(RED) {
 
       // Return the parent (tab or subflow) of the given item or false
       function getParent(item) {
-        var parent = false;
-        if (item.type == "tab") {
-          return parent;
+        if (item.type !== "tab") {
+          const subflowFound = subflowInstancesDefOnlyCopy[item.z];
+          if(subflowFound) return subflowFound;
+
+          const tabFound = workspaces[item.z];
+          if(tabFound) return tabFound;
         }
-        var subs = getSubflows();
-        for (var i = 0; i < subs.length; i++) {
-          if (subs[i].id == item.z) {
-            parent = subs[i];
-            break;
-          }
-        }
-        if (parent == false) {
-          var tabs = getTabs();
-          for (var i = 0; i < tabs.length; i++) {
-            if (tabs[i].id == item.z) {
-              parent = tabs[i];
-              break;
-            }
-          }
-        }
-        return parent;
+        return false;
       }
-      // Return all subflows recursively from the given array
-      function getSubflows(scan) {
-        if (typeof scan == "undefined") {
-          scan = flows;
-        }
-        var items = [];
-        for (var i = 0; i < scan.length; i++) {
-          if (scan[i].type.startsWith("subflow:")) {
-            items.push({
-              name: getSubflowName(scan[i]),
-              type: scan[i].type,
-              id: scan[i].id,
-              z: scan[i].z
-            });
-          }
-        }
-        // Return the subflow name, or its default
-        function getSubflowName(ss) {
-          if (typeof ss.name == "undefined" || ss.name == "") {
-            var name = "";
-            for (var f = 0; f < flows.length; f++) {
-              if (flows[f].id == ss.type.substr(8)) {
-                name = flows[f].name;
-                break;
-              }
-            }
-            return name;
-          }else{
-            return ss.name;
-          }
-        };
-        var more = [];
-        items.forEach(function(f) {
-          var sub = RED.nodes.getNode(f.id);
-          if (sub != null) {
-            var inst = instanceNodesForSub(sub);
-            if (typeof inst != "undefined") {
-              for(var id in inst) {
-                if (id != f.id) {
-                  var subsub = Object.assign({}, inst[id]);
-                  if (subsub.type.startsWith("subflow:")) {
-                    more.push({
-                      name: getSubflowName(subsub),
-                      type: subsub.type,
-                      id: subsub.id,
-                      z: subsub.z
-                    });
-                  }
-                }
-              }
-            }
-          }
-        });
-        if (more.length > 0) {
-          var subsub = getSubflows(more);
-          if (subsub.length > 0) {
-            items = items.concat(subsub);
-          }
-        }
-        return items;
-      }
+
       // Support dividers; dot, dash, space, underscore
       function prefixMatch(s) {
         return s.replace(new RegExp("_", 'g'), " ")
-                .replace(new RegExp("-", 'g'), " ")
-                .replace(new RegExp("\\.", 'g'), " ") + " ";
+            .replace(new RegExp("-", 'g'), " ")
+            .replace(new RegExp("\\.", 'g'), " ") + " ";
       }
+
       // Given the item instance, return the tab it lives on or false
       function findTab(item) {
-        if (item.type == "tab") {
-          return item;
+        if (item.type === "tab") return item;
+
+        let t;
+
+        const tabFound = workspaces[item.z];
+        if(tabFound) t = tabFound;
+
+        if(!t) {
+          const subflowFound = subflowInstancesDefOnlyCopy[item.z];
+          if(subflowFound) t = subflowFound;
         }
-        var tabs = getTabs();
-        var t = tabs.find(function(t) {
-          return item.z == t.id;
-        });
-        if (typeof t == "undefined") {
-          var subs = getSubflows();
-          t = subs.find(function(s) {
-            return item.z == s.id;
-          });
-        }
-        if (typeof t == "undefined") {
+
+        if (!t) {
           return false;
         }
         return findTab(t);
       }
-      // Return all tabs
-      function getTabs() {
-        var tabs = [];
-        for (var i = 0; i < flows.length; i++) {
-          if (flows[i].type == "tab") {
-            tabs.push(flows[i]);
-          }
-        }
-        return tabs;
-      }
+
       // Furnish invoke function for JavaScript authors
       function invokeActionIn(sName, msg) {
         // Match action ins with the given name
