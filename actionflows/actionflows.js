@@ -612,5 +612,5 @@ module.exports = function(RED) {
     return {};
   }
 
-  RED.events.on("nodes-started", runtimeMap);
+  RED.events.on("flows:started", runtimeMap);
 }
