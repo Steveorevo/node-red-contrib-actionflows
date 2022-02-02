@@ -1,10 +1,36 @@
 module.exports = function(RED) {
+  let ContextStore = {};
+
+  /**
+   * Initialise the runtime mapping functions and prepare access to global context via `ContextStore`.
+   * If a context store is not provided, an internal store will be created instead to keep things running 
+   * @param {Object} [store] (optional) pass in the context store for where to store action flows mappings. Send `null` to use internal memory.
+   */
+  function initRuntimeMapper(store) {
+    if(!initRuntimeMapper.initialised) {
+      if(store) {
+        ContextStore = store;
+      } else {
+        ContextStore = {
+          get(name) {
+            return RED.util.getObjectProperty(ContextStore, name);
+          },
+          set(name, value) {
+            RED.util.setObjectProperty(ContextStore, name, value, true);
+          }
+        };
+      }
+      RED.events.on("flows:started", runtimeMap);
+      initRuntimeMapper.initialised = true;
+    }
+  }
+
   RED.nodes.registerType("actionflows", actionflows);
   function actionflows(config) {
-    var node = this;
-
     // Create our node and event handler
     RED.nodes.createNode(this, config);
+    const node = this;
+    initRuntimeMapper(node.context().global);
     var event = "af:" + config.id;
     var handler = function(msg) {
       if (typeof msg._af != "undefined") {
@@ -22,7 +48,8 @@ module.exports = function(RED) {
     this.on("input", function(msg) {
 
       // Check no matching `action in`s, just move along
-      var af = node.context().global.get('actionflows');
+      var af = ContextStore.get('actionflows');
+      // var af = node.context().global.get('actionflows');
       if (typeof af == "undefined") {
         node.status({});
         node.send(msg);
@@ -234,9 +261,10 @@ module.exports = function(RED) {
   }
   RED.nodes.registerType("actionflows_in", actionflows_in);
   function actionflows_in(config) {
-    var node = this;
     // Create our node and event handler
     RED.nodes.createNode(this, config);
+    const node = this;
+    initRuntimeMapper(node.context().global);
     var event = "af:" + config.id;
     var handler = function(msg) {
         node.receive(msg);
@@ -254,6 +282,7 @@ module.exports = function(RED) {
   function actionflows_out(config) {
     RED.nodes.createNode(this, config);
     var node = this;
+    initRuntimeMapper(node.context().global);
     this.on('input', function(msg) {
       if (typeof msg._af != "undefined") {
         RED.events.emit(msg._af["stack"].pop(), msg); // return to the action orig. flow
@@ -263,6 +292,7 @@ module.exports = function(RED) {
 
   // Map actionflows with `action in` assocations on scope settings
   function runtimeMap() {
+    
     const actionflowsNodes = {};
     const actionflowsInNodes = {};
     const actionflowsOutNodes = {};
@@ -349,8 +379,8 @@ module.exports = function(RED) {
 
     // Init mapping variables right away
     function map() {
-      //var af = node.context().global.get('actionflows');
-      var af = RED.settings.functionGlobalContext.get("actionflows");
+      var af = ContextStore.get('actionflows');
+      // var af = RED.settings.functionGlobalContext.get("actionflows");
       if (typeof af == "undefined") {
         af = new Object();
       }
@@ -452,7 +482,8 @@ module.exports = function(RED) {
       af["invoke"] = invokeActionIn;
       af["actions"] = actions;
       af["map"] = map;
-      RED.settings.functionGlobalContext.set("actionflows", af);
+      ContextStore.set('actionflows', af);
+      //RED.settings.functionGlobalContext.set("actionflows", af);
 
       // Return the parent (tab or subflow) of the given item or false
       function getParent(item) {
@@ -570,5 +601,4 @@ module.exports = function(RED) {
     }
     return {};
   }
-  RED.events.on("flows:started", runtimeMap);
 }
